@@ -29,7 +29,7 @@ import net.pyraetos.util.Sys;
 public class TestQuad extends Mesh{
 
 	public TestQuad() {
-		super(initShader());
+		super();
 		FloatBuffer fbuf = BufferUtils.createFloatBuffer(3 * 4);
 		fbuf.put(-.5f).put(-.5f).put(0f);
 		fbuf.put(-.5f).put(.5f).put(0f);
@@ -54,38 +54,6 @@ public class TestQuad extends Mesh{
         
         numVertices = 4;
         numIndices = 6;
-        
-        modelViewMatrix = Matrices.IDENTITY_MATRIX;
-        modelView = Matrices.IDENTITY;
-	}
-	
-	private static int initShader() {
-		int vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, Sys.load("vertex.txt"));
-		glCompileShader(vs);
-		int cvs = glGetShaderi(vs, GL_COMPILE_STATUS);
-		if(cvs == 0) {
-			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(vs));
-		}
-		
-		int fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, Sys.load("fragment.txt"));
-		glCompileShader(fs);
-		int cfs = glGetShaderi(fs, GL_COMPILE_STATUS);
-		if(cfs == 0) {
-			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(vs));
-		}
-		
-		int program = glCreateProgram();
-        glAttachShader(program, vs);
-        glAttachShader(program, fs);
-        glLinkProgram(program);
-        int linked = glGetProgrami(program, GL_LINK_STATUS);
-        if(linked == 0) {
-			Sys.error("Shader linking error!\n" + glGetShaderInfoLog(vs));
-		}
-        
-        return program;
 	}
 	
 }

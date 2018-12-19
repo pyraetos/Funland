@@ -55,6 +55,14 @@ public abstract class Sys{
 		return (float)Math.tan(theta);
 	}
 	
+	public static double average(double... values) {
+		double total = 0;
+		for(double v : values){
+			total += v;
+		}
+		return total / values.length;
+	}
+	
 	public static String[] tokenize(String string, String separator){
 		String[] split = string.split(separator);
 		List<String> list = new ArrayList<String>();

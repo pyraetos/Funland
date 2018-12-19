@@ -4,6 +4,8 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
+import net.pyraetos.util.Sys;
+
 import java.nio.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -15,7 +17,16 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Funland {
 
 	private long window;
-	private TestQuad quad;
+	private Model quad1;
+	private Model quad2;
+	private Shader shader;
+	
+	//Framerate statistics
+	long lastPrintTS;
+	long previousTS;
+	long currentTS;
+	int nextIndex;
+	double[] last30;
 	
 	public static void main(String[] args) {
 		new Funland();
@@ -28,15 +39,43 @@ public class Funland {
 	}
 	
 	private void update() {
+		updateStats();
+		quad1.translate(0.001f, 0.001f, -.01f);
+		quad2.translate(-0.001f, -0.001f, -.01f);
+		quad1.rotate(1, 1, 0, 1);
+		quad2.rotate(1, 1, 1, 0);
 		glfwPollEvents();
 	}
 	
 	private void render() {
-	     quad.render();
+		shader.setEnabled(true);
+		quad1.render();
+		quad2.render();
+		shader.setEnabled(false);
 	}
 
 	private void initEnvironment() {
-		quad = new TestQuad();
+		Mesh mesh = new TestQuad();
+		quad1 = new Model(mesh);
+		quad2 = new Model(mesh);
+	}
+	
+	private void initShader() {
+		shader = new BasicShader();
+	}
+	
+	private void updateStats() {
+		previousTS = currentTS;
+		currentTS = Sys.time();
+		double seconds = ((double)(currentTS - previousTS)) / 1000d;
+		double framerate = 1d / seconds;
+		last30[nextIndex] = framerate;
+		nextIndex = (nextIndex + 1) % 30;
+		if(currentTS - lastPrintTS > 1000) {
+			double average = Sys.round(Sys.average(last30));
+			glfwSetWindowTitle(window, "Funland - FPS: " + average);
+			lastPrintTS = currentTS;
+		}
 	}
 
 	private void initGL() {
@@ -45,7 +84,7 @@ public class Funland {
 			throw new IllegalStateException("Unable to initialize GLFW");
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-		window = glfwCreateWindow(800,600, "Hello World!", NULL, NULL);
+		window = glfwCreateWindow(800,600, "Funland", NULL, NULL);
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
@@ -73,12 +112,18 @@ public class Funland {
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
+		
+		previousTS = currentTS = lastPrintTS = Sys.time();
+		nextIndex = 0;
+		last30 = new double[30];
+		
 		glfwShowWindow(window);
 	}
 	
 	private void init() {
 		initGL();
 		initEnvironment();
+		initShader();
 	}
 
 	private void loop(){
