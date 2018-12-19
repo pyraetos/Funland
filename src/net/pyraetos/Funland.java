@@ -1,39 +1,21 @@
 package net.pyraetos;
 
-import org.joml.Matrix4f;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
-
-import net.pyraetos.util.Sys;
 
 import java.nio.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 public class Funland {
 
 	private long window;
-	
-	private FloatBuffer quad;
-	private IntBuffer indices;
-	private int vbo;
-	private int ibo;
-	
-	private int shader;
-	private Matrix4f modelView;
-	private Matrix4f proj;
+	private TestQuad quad;
 	
 	public static void main(String[] args) {
 		new Funland();
@@ -46,52 +28,15 @@ public class Funland {
 	}
 	
 	private void update() {
-		
+		glfwPollEvents();
 	}
 	
 	private void render() {
-	     glUseProgram(shader);
-		 glEnableVertexAttribArray(0);
-		 glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		 glVertexAttribPointer(0, 3, GL_FLOAT, false, 3*4, 0);
-	     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	     glBindBuffer(GL_ARRAY_BUFFER, 0);
-	     glDisableVertexAttribArray(0);
-	     glUseProgram(0);
+	     quad.render();
 	}
 
 	private void initEnvironment() {
-		//Create matrices
-		proj = new Matrix4f();
-		modelView = new Matrix4f();
-		proj.perspective(Sys.toRadians(45), 1.3333333f, 0.1f, 1000f);
-		modelView.identity();
-		modelView.rotate(Sys.toRadians(20), 0, 0, 1);
-		//modelView.rotate(Sys.toRadians(20), 0, 0, 1);
-		
-		//Create quad
-		quad = BufferUtils.createFloatBuffer(3 * 4);
-		quad.put(0f).put(0f).put(0f);
-		quad.put(0f).put(1.0f).put(0f);
-		quad.put(1.0f).put( 1.0f).put(0f);
-		quad.put(1.0f).put( 0f).put(0f);
-		quad.flip();
-		
-		indices = BufferUtils.createIntBuffer(6);
-		indices.put(new int[] {0,1,2,0,2,3});
-		indices.flip();
-		
-		
-		vbo = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, quad, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        
-        ibo = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		quad = new TestQuad();
 	}
 
 	private void initGL() {
@@ -130,56 +75,15 @@ public class Funland {
 		glEnable(GL_CULL_FACE);
 		glfwShowWindow(window);
 	}
-
-	private void initShaders() {
-		int vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, Sys.load("vertex.txt"));
-		glCompileShader(vs);
-		int cvs = glGetShaderi(vs, GL_COMPILE_STATUS);
-		if(cvs == 0) {
-			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(vs));
-		}
-		
-		int fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, Sys.load("fragment.txt"));
-		glCompileShader(fs);
-		int cfs = glGetShaderi(fs, GL_COMPILE_STATUS);
-		if(cfs == 0) {
-			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(vs));
-		}
-		
-		int program = glCreateProgram();
-        glAttachShader(program, vs);
-        glAttachShader(program, fs);
-        glLinkProgram(program);
-        int linked = glGetProgrami(program, GL_LINK_STATUS);
-        if(linked == 0) {
-			Sys.error("Shader linking error!\n" + glGetShaderInfoLog(vs));
-		}
-        
-		glUseProgram(program);
-		int u = glGetUniformLocation(program, "proj");
-		FloatBuffer projBuf = BufferUtils.createFloatBuffer(16);
-		glUniformMatrix4fv(u, false, proj.get(projBuf));
-		
-		u = glGetUniformLocation(program, "modelView");
-		FloatBuffer mvBuf = BufferUtils.createFloatBuffer(16);
-		glUniformMatrix4fv(u, false, modelView.get(mvBuf));
-        glUseProgram(0);
-        
-        this.shader = program;
-	}
 	
 	private void init() {
 		initGL();
 		initEnvironment();
-		initShaders();
 	}
 
 	private void loop(){
 		while (!glfwWindowShouldClose(window)) {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glfwPollEvents();
 			update();
 			render();
 			glfwSwapBuffers(window);

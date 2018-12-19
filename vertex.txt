@@ -10,7 +10,6 @@ uniform mat4 modelView;
 void main()
 {
 	vec4 vertex4 = modelView * vec4(position, 1.0);
-	vertex4 = vertex4 - vec4(0,0,3,0);
     gl_Position = proj * vertex4;
     //normal = normalize(modelView * vec4(inNormal, 0.0)).xyz;
     vertex = vertex4.xyz;
