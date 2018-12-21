@@ -12,6 +12,8 @@ public class Model{
 
 	protected Mesh mesh;
 	protected Matrix4f modelViewMatrix;
+	protected Matrix4f translationMatrix;
+	protected Matrix4f rotationMatrix;
 	protected FloatBuffer modelView;
 	protected boolean transformed;
 	
@@ -19,28 +21,33 @@ public class Model{
 		this.mesh = mesh;
 		transformed = false;
 		modelViewMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
+		translationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
+		rotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		modelView = Matrices.toBuffer(modelViewMatrix);
 	}
 	
-	//Transform all at once on render call/Make sure order is right
 	public void translate(float x, float y, float z) {
-		modelViewMatrix.translate(x, y, z);
-		modelView = Matrices.toBuffer(modelViewMatrix);
+		translationMatrix.translate(x, y, z);
 		transformed = true;
 	}
 	
 	public void rotate(float ang, float x, float y, float z) {
-		modelViewMatrix.rotate(Sys.toRadians(ang), x, y, z);
-		modelView = Matrices.toBuffer(modelViewMatrix);
+		rotationMatrix.rotate(Sys.toRadians(ang), x, y, z);
 		transformed = true;
 	}
 
 	public void render() {
 		if(transformed) {
+			updateModelViewMatrix();
 			glUniformMatrix4fv(Shader.ACTIVE_SHADER.modelViewUniform, false, modelView);
 			transformed = false;
 		}
 		mesh.render();
+	}
+	
+	private void updateModelViewMatrix() {
+		translationMatrix.mulAffine(rotationMatrix, modelViewMatrix);
+		modelView = Matrices.toBuffer(modelViewMatrix);
 	}
 	
 }

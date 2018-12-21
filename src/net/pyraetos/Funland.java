@@ -16,6 +16,10 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Funland {
 
+	//Options
+	public static final boolean CULL_BACK = false;
+	
+	//State
 	private long window;
 	private Model quad1;
 	private Model quad2;
@@ -109,9 +113,12 @@ public class Funland {
 		GL.createCapabilities();
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glFrontFace(GL_CW);
-		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_CULL_FACE);
+		if(CULL_BACK) {
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+		}
+		
 		
 		previousTS = currentTS = lastPrintTS = Sys.time();
 		nextIndex = 0;
