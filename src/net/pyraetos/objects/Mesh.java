@@ -1,9 +1,7 @@
-package net.pyraetos;
+package net.pyraetos.objects;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 public abstract class Mesh{
@@ -13,7 +11,7 @@ public abstract class Mesh{
 	protected int numVertices;
 	protected int numIndices;
 	
-	protected void render() {
+	public void render() {
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * numVertices, 0);
@@ -21,5 +19,9 @@ public abstract class Mesh{
 		glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glDisableVertexAttribArray(0);
+	}
+	
+	public Model spawnModel() {
+		return new Model(this);
 	}
 }

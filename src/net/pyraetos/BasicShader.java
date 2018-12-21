@@ -25,6 +25,7 @@ public class BasicShader extends Shader{
 		int cfs = glGetShaderi(fs, GL_COMPILE_STATUS);
 		if(cfs == 0) {
 			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(vs));
+			Funland.close();
 		}
 		
 		program = glCreateProgram();
@@ -34,13 +35,16 @@ public class BasicShader extends Shader{
         int linked = glGetProgrami(program, GL_LINK_STATUS);
         if(linked == 0) {
 			Sys.error("Shader linking error!\n" + glGetShaderInfoLog(vs));
+			Funland.close();
 		}
         
         glUseProgram(program);
 		projectionUniform = glGetUniformLocation(program, "proj");
-		modelViewUniform = glGetUniformLocation(program, "modelView");
+		viewUniform = glGetUniformLocation(program, "view");
+		modelUniform = glGetUniformLocation(program, "model");
 		glUniformMatrix4fv(projectionUniform, false, Matrices.PERSPECTIVE);
-		glUniformMatrix4fv(modelViewUniform, false, Matrices.IDENTITY);
+		glUniformMatrix4fv(modelUniform, false, Matrices.IDENTITY);
+		glUniformMatrix4fv(viewUniform, false, Matrices.IDENTITY);
         glUseProgram(0);
 	}
 	

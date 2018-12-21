@@ -6,7 +6,8 @@ public abstract class Shader{
 
 	public int program;
 	public int projectionUniform;
-	public int modelViewUniform;
+	public int viewUniform;
+	public int modelUniform;
 	public static Shader ACTIVE_SHADER;
 	
 	public void setEnabled(boolean enabled) {
