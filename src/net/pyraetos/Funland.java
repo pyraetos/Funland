@@ -6,8 +6,11 @@ import org.lwjgl.system.*;
 
 import net.pyraetos.objects.Mesh;
 import net.pyraetos.objects.Model;
-import net.pyraetos.objects.PRegion;
+import net.pyraetos.objects.Region;
 import net.pyraetos.objects.TestQuad;
+import net.pyraetos.shaders.BasicShader;
+import net.pyraetos.shaders.Shader;
+import net.pyraetos.shaders.TerrainShader;
 import net.pyraetos.util.Sys;
 
 import java.nio.*;
@@ -28,7 +31,11 @@ public class Funland {
 	private Model quad1;
 	private Model quad2;
 	private Model region;
-	private Shader shader;
+	private Model region2;
+	
+	//Shaders
+	private Shader basic;
+	private Shader terrain;
 	
 	//Framerate statistics
 	long lastPrintTS;
@@ -86,25 +93,30 @@ public class Funland {
 			
 	}
 	
-	private void render() {
-		shader.setEnabled(true);
+	private void render() {//Store models in array to reduce lines
+		terrain.setEnabled(true);
 		Camera.view();
-		//quad1.render();
-		//quad2.render();
 		region.render();
-		shader.setEnabled(false);
+		region2.render();
+		basic.setEnabled(true);
+		Camera.view();
+		quad1.render();
+		quad2.render();
+		basic.setEnabled(false);
 	}
 
 	private void initEnvironment() {
 		Mesh mesh = new TestQuad();
 		quad1 = mesh.spawnModel();
 		quad2 = mesh.spawnModel();
-		Mesh mesh2 = new PRegion(0,0);
-		region = mesh2.spawnModel();
+		Region mesh2 = new Region();
+		region = mesh2.spawnModel(0, 0);
+		region2 = mesh2.spawnModel(5f,-7.5f);
 	}
 	
-	private void initShader() {
-		shader = new BasicShader();
+	private void initShaders() {
+		basic = new BasicShader();
+		terrain = new TerrainShader();
 	}
 	
 	private void updateStats() {
@@ -168,7 +180,7 @@ public class Funland {
 	private void init() {
 		initGL();
 		initEnvironment();
-		initShader();
+		initShaders();
 	}
 
 	private void loop(){

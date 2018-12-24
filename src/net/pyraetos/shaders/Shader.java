@@ -1,18 +1,32 @@
-package net.pyraetos;
+package net.pyraetos.shaders;
 
 import static org.lwjgl.opengl.GL20.*;
 
+import net.pyraetos.Funland;
 import net.pyraetos.util.Sys;
 
-public class BasicShader extends Shader{
+public abstract class Shader{
+
+	public int program;
+	public int projectionUniform;
+	public int viewUniform;
+	public int modelUniform;
+	public static Shader ACTIVE_SHADER;
 	
-	public BasicShader() {
-		initShader();
+	public void setEnabled(boolean enabled) {
+		if(enabled) {
+			if(ACTIVE_SHADER != null) glUseProgram(0);
+			glUseProgram(program);
+			ACTIVE_SHADER = this;
+		}else {
+			glUseProgram(0);
+			ACTIVE_SHADER = null;
+		}
 	}
 	
-	private void initShader() {
+	protected void initShader(String vertexPath, String fragmentPath) {
 		int vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, Sys.load("vertex.txt"));
+		glShaderSource(vs, Sys.load(vertexPath));
 		glCompileShader(vs);
 		int cvs = glGetShaderi(vs, GL_COMPILE_STATUS);
 		if(cvs == 0) {
@@ -20,7 +34,7 @@ public class BasicShader extends Shader{
 		}
 		
 		int fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, Sys.load("fragment.txt"));
+		glShaderSource(fs, Sys.load(fragmentPath));
 		glCompileShader(fs);
 		int cfs = glGetShaderi(fs, GL_COMPILE_STATUS);
 		if(cfs == 0) {
@@ -37,15 +51,6 @@ public class BasicShader extends Shader{
 			Sys.error("Shader linking error!\n" + glGetShaderInfoLog(vs));
 			Funland.close();
 		}
-        
-        glUseProgram(program);
-		projectionUniform = glGetUniformLocation(program, "proj");
-		viewUniform = glGetUniformLocation(program, "view");
-		modelUniform = glGetUniformLocation(program, "model");
-		glUniformMatrix4fv(projectionUniform, false, Matrices.PERSPECTIVE);
-		glUniformMatrix4fv(modelUniform, false, Matrices.IDENTITY);
-		glUniformMatrix4fv(viewUniform, false, Matrices.IDENTITY);
-        glUseProgram(0);
 	}
 	
 }

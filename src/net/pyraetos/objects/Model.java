@@ -7,7 +7,7 @@ import java.nio.FloatBuffer;
 import org.joml.Matrix4f;
 
 import net.pyraetos.Matrices;
-import net.pyraetos.Shader;
+import net.pyraetos.shaders.Shader;
 import net.pyraetos.util.Sys;
 
 public class Model{
@@ -38,12 +38,14 @@ public class Model{
 		transformed = true;
 	}
 
+	//Model-level rendering applies and sends to shader model matrix
+	//then calls mesh-level render
 	public void render() {
 		if(transformed) {
 			updateModelMatrix();
-			glUniformMatrix4fv(Shader.ACTIVE_SHADER.modelUniform, false, model);
 			transformed = false;
 		}
+		glUniformMatrix4fv(Shader.ACTIVE_SHADER.modelUniform, false, model);
 		mesh.render();
 	}
 	

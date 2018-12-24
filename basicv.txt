@@ -13,7 +13,6 @@ void main()
 	vec4 vertex4 = (proj * view * model) * vec4(position, 1.0);
     gl_Position = vertex4;
     localVertex = position;
-    
     //normal = normalize(modelView * vec4(inNormal, 0.0)).xyz;
     
 }

@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 
 import org.joml.Matrix4f;
 
+import net.pyraetos.shaders.Shader;
 import net.pyraetos.util.Sys;
 
 public abstract class Camera{
@@ -21,6 +22,7 @@ public abstract class Camera{
 		translationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		rotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		viewMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
+		updateViewMatrix();
 		rotY = 0f;
 		transformed = false;
 	}
@@ -40,14 +42,13 @@ public abstract class Camera{
 	public static void view() {
 		if(transformed) {
 			updateViewMatrix();
-			glUniformMatrix4fv(Shader.ACTIVE_SHADER.viewUniform, false, view);
 			transformed = false;
 		}
+		glUniformMatrix4fv(Shader.ACTIVE_SHADER.viewUniform, false, view);
 	}
 	
 	private static void updateViewMatrix() {
 		rotationMatrix.mulAffine(translationMatrix, viewMatrix);
-		//translationMatrix.mulAffine(rotationMatrix, viewMatrix);
 		view = Matrices.toBuffer(viewMatrix);
 	}
 	

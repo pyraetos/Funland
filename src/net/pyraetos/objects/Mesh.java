@@ -14,23 +14,19 @@ public abstract class Mesh{
 	protected int numIndices;
 	
 	public void render() {
-		//glEnableVertexAttribArray(0);
 		glBindVertexArray(vao);
 		glEnableVertexAttribArray(0);
+		specialRender();
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glDisableVertexAttribArray(0);
 		glBindVertexArray(0);
-		/*glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * numVertices, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glDisableVertexAttribArray(0);*/
 	}
 	
 	public Model spawnModel() {
 		return new Model(this);
 	}
+	
+	protected abstract void specialRender();
 }
