@@ -13,6 +13,7 @@ import org.lwjgl.BufferUtils;
 
 import net.pyraetos.pgenerate.PGenerate;
 import net.pyraetos.util.Sys;
+import static org.lwjgl.opengl.GL30.*;
 
 //PRegion is one to one mesh and model
 //Should find better way to store mesh on GPU?
@@ -27,7 +28,9 @@ public class PRegion extends Mesh{
 	
 	public PRegion(float x, float z) {
 		super();
-		FloatBuffer fbuf = BufferUtils.createFloatBuffer(3 * 25);
+		numVertices = 25;
+        numIndices = 6 * 16;
+		FloatBuffer fbuf = BufferUtils.createFloatBuffer(3 * numVertices);
 		for(int xi = 0; xi < 5; xi++) {
 			float curX = x + ((float)xi - 2f);
 			int icurX = (int)Math.round(curX) + 512;
@@ -35,13 +38,13 @@ public class PRegion extends Mesh{
 				float curZ = z + ((float)zi - 2f);
 				int icurZ = (int)Math.round(curZ) + 512;
 				pg.generate(icurX, icurZ);
-				Sys.debug(curX + " " + 2f*pg.getValue(icurX, icurZ)+" " + curZ);
+				Sys.debug(curX + " " +2f*pg.getValue(icurX, icurZ)+" " + curZ);
 				fbuf.put(curX).put(2f*pg.getValue(icurX, icurZ)).put(curZ);
 			}
 		}
 		fbuf.flip();
 		
-		IntBuffer indices = BufferUtils.createIntBuffer(6 * 16);
+		IntBuffer indices = BufferUtils.createIntBuffer(numIndices);
 		int arr[] = {1,0,5,1,5,6};
 		for(int i = 0; i < 19; i++) {
 			for(int j = 0; j < 6; j++) {
@@ -55,10 +58,13 @@ public class PRegion extends Mesh{
 		}
 		indices.flip();
 		
+		vao = glGenVertexArrays();
+		glBindVertexArray(vao);
 		
 		vbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, fbuf, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3 ,GL_FLOAT, false, 0, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         ibo = glGenBuffers();
@@ -66,8 +72,7 @@ public class PRegion extends Mesh{
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         
-        numVertices = 25;
-        numIndices = 16 * 6;
+        glBindVertexArray(0);
 	}
 	
 }

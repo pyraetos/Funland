@@ -66,7 +66,6 @@ public class Funland {
 		if(Keyboard.pressed(GLFW_KEY_LEFT_SHIFT))
 			Camera.translate(0f, -0.1f, 0f);
 		
-		
 		//Logic
 		quad1.translate(0.001f, 0.001f, -.01f);
 		quad2.translate(-0.001f, -0.001f, -.01f);
@@ -90,8 +89,8 @@ public class Funland {
 	private void render() {
 		shader.setEnabled(true);
 		Camera.view();
-		quad1.render();
-		quad2.render();
+		//quad1.render();
+		//quad2.render();
 		region.render();
 		shader.setEnabled(false);
 	}
