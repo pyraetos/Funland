@@ -7,6 +7,7 @@ import org.lwjgl.system.*;
 import net.pyraetos.objects.Mesh;
 import net.pyraetos.objects.Model;
 import net.pyraetos.objects.Region;
+import net.pyraetos.objects.RegionModel;
 import net.pyraetos.objects.TestQuad;
 import net.pyraetos.shaders.BasicShader;
 import net.pyraetos.shaders.Shader;
@@ -14,6 +15,8 @@ import net.pyraetos.shaders.TerrainShader;
 import net.pyraetos.util.Sys;
 
 import java.nio.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -30,8 +33,7 @@ public class Funland {
 	private static long window;
 	private Model quad1;
 	private Model quad2;
-	private Model region;
-	private Model region2;
+	private List<Model> regions;
 	
 	//Shaders
 	private Shader basic;
@@ -96,8 +98,8 @@ public class Funland {
 	private void render() {//Store models in array to reduce lines
 		terrain.setEnabled(true);
 		Camera.view();
-		region.render();
-		region2.render();
+		for(Model region : regions)
+			region.render();
 		basic.setEnabled(true);
 		Camera.view();
 		quad1.render();
@@ -110,8 +112,13 @@ public class Funland {
 		quad1 = mesh.spawnModel();
 		quad2 = mesh.spawnModel();
 		Region mesh2 = new Region();
-		region = mesh2.spawnModel(0, 0);
-		region2 = mesh2.spawnModel(5f,-7.5f);
+		regions = new ArrayList<Model>();
+		for(int i = -1; i < 2; i++) {
+			for(int j = -1; j < 2; j++) {
+				RegionModel r = mesh2.spawnModel(Region.SIDE * i, Region.SIDE * j);
+				regions.add(r);
+			}
+		}
 	}
 	
 	private void initShaders() {

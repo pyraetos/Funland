@@ -19,16 +19,18 @@ import static org.lwjgl.opengl.GL30.*;
 public class Region extends Mesh{
 
 	protected static PGenerate pg;
+	public static final int SIDE = 9;
 	
 	static {
 		pg = new PGenerate(1024,1024);//Don't like hard size
+		pg.setEntropy(10f);
 	}
 	
 	//On construction, create basic 5x5 region complete with indices
 	public Region() {
 		super();
-		numVertices = 25;
-        numIndices = 6 * 16;
+		numVertices = SIDE * SIDE;
+        numIndices = 6 * (SIDE - 1) * (SIDE - 1);
         
 		FloatBuffer vbuf = BufferUtils.createFloatBuffer(3 * numVertices);
 		initVertices(vbuf);
@@ -53,10 +55,11 @@ public class Region extends Mesh{
 	}
 	
 	private void initVertices(FloatBuffer fbuf) {
-		for(int xi = 0; xi < 5; xi++) {
-			float curX = ((float)xi - 2f);
-			for(int zi = 0; zi < 5; zi++) {
-				float curZ = ((float)zi - 2f);
+		float off = -((float)SIDE / 2f) - 0.5f;
+		for(int xi = 0; xi < SIDE; xi++) {
+			float curX = ((float)xi + off);
+			for(int zi = 0; zi < SIDE; zi++) {
+				float curZ = ((float)zi + off);
 				fbuf.put(curX).put(0f).put(curZ);
 			}
 		}
@@ -64,10 +67,10 @@ public class Region extends Mesh{
 	}
 
 	private void initIndices(IntBuffer ibuf) {
-		int arr[] = {1,0,5,1,5,6};
-		for(int i = 0; i < 19; i++) {
+		int arr[] = {1,0,SIDE,1,SIDE,SIDE+1};
+		for(int i = 0; i < SIDE * (SIDE - 1) - 1; i++) {
 			for(int j = 0; j < 6; j++) {
-				if(i != 4 && i != 9 && i != 14) {
+				if((i+1) % SIDE != 0) {
 					ibuf.put(arr[j]);
 				}
 				arr[j]++;
@@ -77,8 +80,8 @@ public class Region extends Mesh{
 	}
 	
 	//See RegionModel notes
-	public RegionModel spawnModel(float x, float y) {
-		RegionModel rm = new RegionModel(x, y, this);
+	public RegionModel spawnModel(float x, float z) {
+		RegionModel rm = new RegionModel(x, z, this);
 		return rm;
 	}
 	
@@ -86,6 +89,7 @@ public class Region extends Mesh{
 	@Override
 	protected void specialRender(){
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 	}
 	
 }

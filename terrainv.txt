@@ -2,6 +2,9 @@
 
 layout (location=0) in vec3 position;
 layout (location=1) in float y;
+layout (location=2) in vec3 inNormal;
+
+out vec3 normal;
 
 uniform mat4 proj;
 uniform mat4 view;
@@ -12,5 +15,6 @@ void main()
 	vec3 positionWithY = vec3(position.x, y, position.z);
 	vec4 vertex4 = (proj * view * model) * vec4(positionWithY, 1.0);
     gl_Position = vertex4;
+    normal = inNormal;
     //normal = normalize(modelView * vec4(inNormal, 0.0)).xyz;
 }
