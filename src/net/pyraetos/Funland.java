@@ -15,8 +15,10 @@ import net.pyraetos.shaders.TerrainShader;
 import net.pyraetos.util.Sys;
 
 import java.nio.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -33,7 +35,11 @@ public class Funland {
 	private static long window;
 	private Model quad1;
 	private Model quad2;
-	private List<Model> regions;
+	private Region regionMesh;
+	private Map<Integer, Map<Integer, Model>> regions;
+	private Set<Model> activeRegions;
+	private int rX;
+	private int rZ;
 	
 	//Shaders
 	private Shader basic;
@@ -44,6 +50,7 @@ public class Funland {
 	long previousTS;
 	long currentTS;
 	int nextIndex;
+	double average;
 	double[] last30;
 	
 	public static void main(String[] args) {
@@ -74,12 +81,45 @@ public class Funland {
 			Camera.translate(0f, 0.1f, 0f);
 		if(Keyboard.pressed(GLFW_KEY_LEFT_SHIFT))
 			Camera.translate(0f, -0.1f, 0f);
+		//TODO MOUSE SCROLL
+		/*if(Mouse.scrolled())
+			Camera.rotate(Mouse.getAngle(), 1f, 0f, 0f);*/
+		
+		//Window Title and Generate New Regions
+		int newrX = ((int)Math.floor(Camera.x) / Region.SIDE);
+		int newrZ = ((int)Math.floor(Camera.z) / Region.SIDE); 
+		if(newrX != rX || newrZ != rZ) {
+			rX = newrX;
+			rZ = newrZ;
+			updateRegions();
+		}
+		glfwSetWindowTitle(window, "Funland - FPS: " + average +
+				" | x = " + Sys.round1(Camera.x) + " y = " + Sys.round1(Camera.y) + " z = " + Sys.round1(Camera.z) +
+				" | rX = " + rX + " rZ = " + rZ);
 		
 		//Logic
 		quad1.translate(0.001f, 0.001f, -.01f);
 		quad2.translate(-0.001f, -0.001f, -.01f);
 		quad1.rotate(1, 1, 0, 1);
 		quad2.rotate(1, 1, 1, 0);
+	}
+	
+	//Not super ideal to generate as a square.. should be circular around camera
+	//Also updates active regions that ought to be rendered
+	private void updateRegions() {
+		activeRegions.clear();
+		for(int i = rX-5; i < rX+6; i++) {
+			for(int j = rZ-5; j < rZ+6; j++) {
+				if(!regions.containsKey(i))
+					regions.put(i, new HashMap<Integer, Model>());
+				Map<Integer, Model> internalMap = regions.get(i);
+				if(!internalMap.containsKey(j)) {
+					RegionModel r = regionMesh.spawnModel(Region.SIDE * i - i, Region.SIDE * j - j);
+					internalMap.put(j, r);
+				}
+				activeRegions.add(internalMap.get(j));
+			}
+		}
 	}
 	
 	private void handleKeyInput(int key, int action) {
@@ -92,16 +132,19 @@ public class Funland {
 		if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
 			close();
 		}
-			
 	}
 	
-	private void render() {//Store models in array to reduce lines
+	private void handleScrollInput(double yoffset) {
+		Mouse.scroll(yoffset);
+	}
+	
+	private void render() {
 		terrain.setEnabled(true);
 		Camera.view();
-		for(Model region : regions)
+		for(Model region : activeRegions)
 			region.render();
 		basic.setEnabled(true);
-		Camera.view();
+		Camera.view();//Simply don't call this to do a HUD
 		quad1.render();
 		quad2.render();
 		basic.setEnabled(false);
@@ -111,14 +154,10 @@ public class Funland {
 		Mesh mesh = new TestQuad();
 		quad1 = mesh.spawnModel();
 		quad2 = mesh.spawnModel();
-		Region mesh2 = new Region();
-		regions = new ArrayList<Model>();
-		for(int i = -1; i < 2; i++) {
-			for(int j = -1; j < 2; j++) {
-				RegionModel r = mesh2.spawnModel(Region.SIDE * i, Region.SIDE * j);
-				regions.add(r);
-			}
-		}
+		regionMesh = new Region();
+		regions = new HashMap<Integer, Map<Integer, Model>>();
+		activeRegions = new HashSet<Model>();
+		updateRegions();
 	}
 	
 	private void initShaders() {
@@ -134,8 +173,7 @@ public class Funland {
 		last30[nextIndex] = framerate;
 		nextIndex = (nextIndex + 1) % 30;
 		if(currentTS - lastPrintTS > 1000) {
-			double average = Sys.round(Sys.average(last30));
-			glfwSetWindowTitle(window, "Funland - FPS: " + average);
+			average = Sys.round(Sys.average(last30));
 			lastPrintTS = currentTS;
 		}
 	}
@@ -146,11 +184,14 @@ public class Funland {
 			throw new IllegalStateException("Unable to initialize GLFW");
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-		window = glfwCreateWindow(800,600, "Funland", NULL, NULL);
+		window = glfwCreateWindow(1200,900, "Funland", NULL, NULL);
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
 			handleKeyInput(key, action);
+		});
+		glfwSetScrollCallback(window, (window, xoffset, yoffset)->{
+			handleScrollInput(yoffset);
 		});
 
 		// Get the thread stack and push a new frame
@@ -168,7 +209,7 @@ public class Funland {
 		glfwMakeContextCurrent(window);
 		glfwSwapInterval(1);
 		GL.createCapabilities();
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(0.5f, 0.7f, 1.0f, 0.0f);
 		glFrontFace(GL_CW);
 		glEnable(GL_DEPTH_TEST);
 		if(CULL_BACK) {

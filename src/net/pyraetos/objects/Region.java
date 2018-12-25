@@ -14,16 +14,20 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 
 import net.pyraetos.pgenerate.PGenerate;
+import net.pyraetos.util.Sys;
+
 import static org.lwjgl.opengl.GL30.*;
 
 public class Region extends Mesh{
 
 	protected static PGenerate pg;
 	public static final int SIDE = 9;
+	public static final float ENTROPY = 4f;
+	public static final long SEED = Sys.randomSeed();
 	
 	static {
-		pg = new PGenerate(1024,1024);//Don't like hard size
-		pg.setEntropy(10f);
+		pg = new PGenerate(1024, 1024, SEED);//Don't like hard size, .generate should return if already generated
+		pg.setEntropy(ENTROPY);
 	}
 	
 	//On construction, create basic 5x5 region complete with indices

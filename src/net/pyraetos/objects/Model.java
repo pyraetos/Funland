@@ -18,9 +18,13 @@ public class Model{
 	protected Matrix4f rotationMatrix;
 	protected FloatBuffer model;
 	protected boolean transformed;
+	protected int modelID;
+	
+	public static int nextModelID = 0x0;
 	
 	public Model(Mesh mesh) {
 		this.mesh = mesh;
+		modelID = nextModelID++;
 		transformed = false;
 		modelMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		translationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
@@ -52,6 +56,25 @@ public class Model{
 	private void updateModelMatrix() {
 		translationMatrix.mulAffine(rotationMatrix, modelMatrix);
 		model = Matrices.toBuffer(modelMatrix);
+	}
+
+	@Override
+	public int hashCode(){
+		return modelID;
+	}
+
+	@Override
+	public boolean equals(Object obj){
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Model other = (Model) obj;
+		if (modelID != other.modelID)
+			return false;
+		return true;
 	}
 	
 }

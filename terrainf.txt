@@ -1,13 +1,16 @@
 #version 330
 
 in vec3 normal;
+in vec3 viewedVertex;
 
 out vec4 fragColor;
 
 void main()
 {
 	//fragColor = vec4(normal.x, normal.y, normal.z, 1.0);
-	float light = max(dot(normal, vec3(0, 1, 0)), 0.0);
+	float lightFactor = pow(max(dot(normal, vec3(0, 1, 0)), 0.0), 3.0);
+	float fogFactor = min(pow(1.5, length(viewedVertex) - 30), 1.0);
+	vec3 fog = vec3(0.5, 0.7, 1.0);
 	vec3 base = vec3(0.7, 1.0, 0.5);
-	fragColor = vec4(base * light, 1.0);
+	fragColor = vec4(fog * fogFactor + lightFactor * base * (1.0 - fogFactor), 1.0);
 }

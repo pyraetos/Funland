@@ -18,23 +18,36 @@ public abstract class Camera{
 	private static FloatBuffer view;
 	private static boolean transformed;
 	
+	//Camera position in world
+	public static float x;
+	public static float y;
+	public static float z;
+	
 	static {
 		translationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		rotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		viewMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		updateViewMatrix();
 		rotY = 0f;
+		x = y = z = 0.0f;
 		transformed = false;
 	}
 	
 	public static void translate(float x, float y, float z) {
-		translationMatrix.translate(z * Sys.sin(rotY), -y, -z * Sys.cos(rotY));
+		float dx = -z * Sys.sin(rotY);
+		float dy = y;
+		float dz = z * Sys.cos(rotY);
+		Camera.x += dx;
+		Camera.y += dy;
+		Camera.z += dz;
+		translationMatrix.translate(-dx, -dy, -dz);
 		transformed = true;
 	}
-	
+
 	public static void rotate(float ang, float x, float y, float z) {
 		float rot = -Sys.toRadians(ang);
-		rotY += rot;
+		if(y == 1) 
+			rotY += rot;
 		rotationMatrix.rotate(rot, x, y, z);
 		transformed = true;
 	}
