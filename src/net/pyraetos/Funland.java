@@ -8,7 +8,7 @@ import net.pyraetos.objects.Mesh;
 import net.pyraetos.objects.Model;
 import net.pyraetos.objects.Region;
 import net.pyraetos.objects.RegionModel;
-import net.pyraetos.objects.TestQuad;
+import net.pyraetos.objects.TestCube;
 import net.pyraetos.shaders.BasicShader;
 import net.pyraetos.shaders.Shader;
 import net.pyraetos.shaders.TerrainShader;
@@ -33,8 +33,8 @@ public class Funland {
 	
 	//State
 	private static long window;
-	private Model quad1;
-	private Model quad2;
+	private Model testCube;
+	private Model cylinder;
 	private Region regionMesh;
 	private Map<Integer, Map<Integer, Model>> regions;
 	private Set<Model> activeRegions;
@@ -86,8 +86,8 @@ public class Funland {
 			Camera.rotate(Mouse.getAngle(), 1f, 0f, 0f);*/
 		
 		//Window Title and Generate New Regions
-		int newrX = ((int)Math.floor(Camera.x) / Region.SIDE);
-		int newrZ = ((int)Math.floor(Camera.z) / Region.SIDE); 
+		int newrX = ((int)Math.floor(Camera.x) / (Region.SIDE-1));
+		int newrZ = ((int)Math.floor(Camera.z) / (Region.SIDE-1)); 
 		if(newrX != rX || newrZ != rZ) {
 			rX = newrX;
 			rZ = newrZ;
@@ -98,10 +98,10 @@ public class Funland {
 				" | rX = " + rX + " rZ = " + rZ);
 		
 		//Logic
-		quad1.translate(0.001f, 0.001f, -.01f);
-		quad2.translate(-0.001f, -0.001f, -.01f);
-		quad1.rotate(1, 1, 0, 1);
-		quad2.rotate(1, 1, 1, 0);
+		testCube.translate(0.001f, -0.001f, -.005f);
+		testCube.rotate(1f, 1f, 0f);
+		cylinder.translate(-0.001f, 0.001f, -.005f);
+		cylinder.rotate(.2f, .4f, .6f);
 	}
 	
 	//Not super ideal to generate as a square.. should be circular around camera
@@ -145,18 +145,22 @@ public class Funland {
 			region.render();
 		basic.setEnabled(true);
 		Camera.view();//Simply don't call this to do a HUD
-		quad1.render();
-		quad2.render();
+		testCube.render();
+		cylinder.render();
 		basic.setEnabled(false);
 	}
 
 	private void initEnvironment() {
-		Mesh mesh = new TestQuad();
-		quad1 = mesh.spawnModel();
-		quad2 = mesh.spawnModel();
+		Mesh cubeMesh = new TestCube();
+		testCube = cubeMesh.spawnModel();
+		
 		regionMesh = new Region();
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
+		
+		Mesh cylMesh = ObjLoader.load("cylinder.obj");
+		cylinder = cylMesh.spawnModel();
+		cylinder.scale(0.01f);
 		updateRegions();
 	}
 	

@@ -75,13 +75,9 @@ public class RegionModel extends Model{
 		for(int i = 1; i <= side; i++) {
 			for(int j = 1; j <= side; j++) {
 				Vector3f n0 = computeNormal(i-1, j, i, j-1, i, j);
-				Vector3f n1a = computeNormal(i-1, j+1, i-1, j, i, j);
-				Vector3f n1b = computeNormal(i-1, j+1, i, j, i, j+1);
-				Vector3f n1 = average(n1a, n1b);
+				Vector3f n1 = computeNormal(i, j+1, i-1, j, i, j);
 				Vector3f n2 = computeNormal(i, j+1, i, j, i+1, j);
-				Vector3f n3a = computeNormal(i, j, i+1, j-1, i+1, j);
-				Vector3f n3b = computeNormal(i, j, i, j-1, i+1, j-1);
-				Vector3f n3 = average(n3a, n3b);
+				Vector3f n3 = computeNormal(i, j, i, j-1, i+1, j);
 				Vector3f vn = average(n0, n1, n2, n3);
 				nbuf.put(vn.x).put(vn.y).put(vn.z);
 			}

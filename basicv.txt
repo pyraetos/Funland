@@ -1,8 +1,10 @@
 #version 330
 
 layout (location=0) in vec3 position;
+layout (location=1) in vec3 normal;
 
-out vec3 localVertex;
+out vec3 viewedVertex;
+out vec3 fragNormal;
 
 uniform mat4 proj;
 uniform mat4 view;
@@ -10,9 +12,10 @@ uniform mat4 model;
 
 void main()
 {
-	vec4 vertex4 = (proj * view * model) * vec4(position, 1.0);
+	vec4 viewedVertex4 = view * model * vec4(position, 1.0);
+	vec4 vertex4 = proj * viewedVertex4;
+	viewedVertex = viewedVertex4.xyz;
     gl_Position = vertex4;
-    localVertex = position;
-    //normal = normalize(modelView * vec4(inNormal, 0.0)).xyz;
     
+    fragNormal = normalize(view * model * vec4(normal, 0.0)).xyz;
 }

@@ -18,43 +18,37 @@ import java.nio.IntBuffer;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
-public class TestQuad extends Mesh{
+public class NormalMesh extends Mesh{
 
 	private int nbo;
 	
-	public TestQuad() {
+	public NormalMesh(Vector3f[] vertices, int[] indices, Vector3f[] normals) {
 		super();
 		
-		numVertices = 4;
-        numIndices = 6;
+		numVertices = vertices.length;
+        numIndices = indices.length;
+        
+		FloatBuffer vbuf = BufferUtils.createFloatBuffer(3 * numVertices);
+		for(Vector3f vertex : vertices)
+			vbuf.put(vertex.x).put(vertex.y).put(vertex.z);
+		vbuf.flip();
 		
-		FloatBuffer fbuf = BufferUtils.createFloatBuffer(3 * numVertices);
-		fbuf.put(-.5f).put(-.5f).put(0f);
-		fbuf.put(-.5f).put(.5f).put(0f);
-		fbuf.put(.5f).put(.5f).put(0f);
-		fbuf.put(.5f).put(-.5f).put(0f);
-		fbuf.flip();
+		IntBuffer ibuf = BufferUtils.createIntBuffer(numIndices);
+		for(int i : indices)
+			ibuf.put(i);
+		ibuf.flip();
 		
-		IntBuffer indices = BufferUtils.createIntBuffer(numIndices);
-		indices.put(new int[] {0,1,2,0,2,3});
-		indices.flip();
-		
-		FloatBuffer normals = BufferUtils.createFloatBuffer(3 * numVertices);
-		Vector3f[] normalVecs = new Vector3f[4];
-		normalVecs[0] = new Vector3f(-1f, -1f, 0f).normalize();
-		normalVecs[1] = new Vector3f(-1f, 1f, 0f).normalize();
-		normalVecs[2] = new Vector3f(1f, 1f, 0f).normalize();
-		normalVecs[3] = new Vector3f(1f, -1f, 0f).normalize();
-		for(Vector3f normalVec : normalVecs)
-			normals.put(normalVec.x).put(normalVec.y).put(normalVec.z);
-		normals.flip();
+		FloatBuffer nbuf = BufferUtils.createFloatBuffer(3 * numIndices);
+		for(Vector3f normal : normals)
+			nbuf.put(normal.x).put(normal.y).put(normal.z);
+		nbuf.flip();
 		
 		vao = glGenVertexArrays();
 		glBindVertexArray(vao);
 		
 		vbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, fbuf, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, vbuf, GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3 ,GL_FLOAT, false, 0, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
@@ -65,11 +59,13 @@ public class TestQuad extends Mesh{
         
         nbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, nbo);
-        glBufferData(GL_ARRAY_BUFFER, normals, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, nbuf, GL_STATIC_DRAW);
         glVertexAttribPointer(1, 3 ,GL_FLOAT, false, 0, 0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         glBindVertexArray(0);
+        
+        
 	}
 
 	@Override

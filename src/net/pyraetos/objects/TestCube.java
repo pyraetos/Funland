@@ -18,33 +18,47 @@ import java.nio.IntBuffer;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
-public class TestQuad extends Mesh{
+public class TestCube extends Mesh{
 
 	private int nbo;
 	
-	public TestQuad() {
+	public TestCube() {
 		super();
 		
-		numVertices = 4;
-        numIndices = 6;
-		
+		numVertices = 8;
+        numIndices = 36;
+        
 		FloatBuffer fbuf = BufferUtils.createFloatBuffer(3 * numVertices);
-		fbuf.put(-.5f).put(-.5f).put(0f);
-		fbuf.put(-.5f).put(.5f).put(0f);
-		fbuf.put(.5f).put(.5f).put(0f);
-		fbuf.put(.5f).put(-.5f).put(0f);
+		fbuf.put(-.5f).put(-.5f).put(.5f);
+		fbuf.put(-.5f).put(.5f).put(.5f);
+		fbuf.put(.5f).put(.5f).put(.5f);
+		fbuf.put(.5f).put(-.5f).put(.5f);
+		
+		fbuf.put(-.5f).put(-.5f).put(-.5f);
+		fbuf.put(-.5f).put(.5f).put(-.5f);
+		fbuf.put(.5f).put(.5f).put(-.5f);
+		fbuf.put(.5f).put(-.5f).put(-.5f);
 		fbuf.flip();
 		
 		IntBuffer indices = BufferUtils.createIntBuffer(numIndices);
-		indices.put(new int[] {0,1,2,0,2,3});
+		indices.put(new int[] {0,1,2,0,2,3,
+								4,5,1,4,1,0,
+								7,6,5,7,5,4,
+								3,2,6,3,6,7,
+								1,5,6,1,6,2,
+								4,0,3,4,3,7});
 		indices.flip();
 		
 		FloatBuffer normals = BufferUtils.createFloatBuffer(3 * numVertices);
-		Vector3f[] normalVecs = new Vector3f[4];
-		normalVecs[0] = new Vector3f(-1f, -1f, 0f).normalize();
-		normalVecs[1] = new Vector3f(-1f, 1f, 0f).normalize();
-		normalVecs[2] = new Vector3f(1f, 1f, 0f).normalize();
-		normalVecs[3] = new Vector3f(1f, -1f, 0f).normalize();
+		Vector3f[] normalVecs = new Vector3f[8];
+		normalVecs[0] = new Vector3f(-1f, -1f, 1f).normalize();
+		normalVecs[1] = new Vector3f(-1f, 1f, 1f).normalize();
+		normalVecs[2] = new Vector3f(1f, 1f, 1f).normalize();
+		normalVecs[3] = new Vector3f(1f, -1f, 1f).normalize();
+		normalVecs[4] = new Vector3f(-1f, -1f, -1f).normalize();
+		normalVecs[5] = new Vector3f(-1f, 1f, -1f).normalize();
+		normalVecs[6] = new Vector3f(1f, 1f, -1f).normalize();
+		normalVecs[7] = new Vector3f(1f, -1f, -1f).normalize();
 		for(Vector3f normalVec : normalVecs)
 			normals.put(normalVec.x).put(normalVec.y).put(normalVec.z);
 		normals.flip();
@@ -70,6 +84,8 @@ public class TestQuad extends Mesh{
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         glBindVertexArray(0);
+        
+        
 	}
 
 	@Override

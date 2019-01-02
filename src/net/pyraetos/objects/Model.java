@@ -16,6 +16,7 @@ public class Model{
 	protected Matrix4f modelMatrix;
 	protected Matrix4f translationMatrix;
 	protected Matrix4f rotationMatrix;
+	protected Matrix4f scaleMatrix;
 	protected FloatBuffer model;
 	protected boolean transformed;
 	protected int modelID;
@@ -29,6 +30,7 @@ public class Model{
 		modelMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		translationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		rotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
+		scaleMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		model = Matrices.toBuffer(modelMatrix);
 	}
 	
@@ -37,8 +39,20 @@ public class Model{
 		transformed = true;
 	}
 	
-	public void rotate(float ang, float x, float y, float z) {
-		rotationMatrix.rotate(Sys.toRadians(ang), x, y, z);
+	float rx = 0f;
+	float ry = 0f;
+	float rz = 0f;
+	
+	public void rotate(float xAng, float yAng, float zAng) {
+		rx = Sys.simplifyAngler(rx + Sys.toRadians(xAng));
+		ry = Sys.simplifyAngler(ry + Sys.toRadians(yAng));
+		rz = Sys.simplifyAngler(rz + Sys.toRadians(zAng));
+		rotationMatrix.setRotationXYZ(rx, ry, rz);
+		transformed = true;
+	}
+	
+	public void scale(float amt){
+		scaleMatrix.scale(amt);
 		transformed = true;
 	}
 
@@ -54,10 +68,11 @@ public class Model{
 	}
 	
 	private void updateModelMatrix() {
-		translationMatrix.mulAffine(rotationMatrix, modelMatrix);
+		rotationMatrix.mulAffine(scaleMatrix, modelMatrix);
+		translationMatrix.mulAffine(modelMatrix, modelMatrix);
 		model = Matrices.toBuffer(modelMatrix);
 	}
-
+	
 	@Override
 	public int hashCode(){
 		return modelID;
