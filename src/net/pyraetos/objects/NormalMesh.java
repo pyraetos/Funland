@@ -38,9 +38,10 @@ public class NormalMesh extends Mesh{
 			ibuf.put(i);
 		ibuf.flip();
 		
-		FloatBuffer nbuf = BufferUtils.createFloatBuffer(3 * numIndices);
-		for(Vector3f normal : normals)
+		FloatBuffer nbuf = BufferUtils.createFloatBuffer(3 * numVertices);
+		for(Vector3f normal : normals) {
 			nbuf.put(normal.x).put(normal.y).put(normal.z);
+		}
 		nbuf.flip();
 		
 		vao = glGenVertexArrays();

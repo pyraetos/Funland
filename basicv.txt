@@ -18,4 +18,5 @@ void main()
     gl_Position = vertex4;
     
     fragNormal = normalize(view * model * vec4(normal, 0.0)).xyz;
+    //fragNormal = normal;
 }

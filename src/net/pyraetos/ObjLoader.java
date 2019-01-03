@@ -28,8 +28,8 @@ public abstract class ObjLoader{
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			String line;
 			while((line = reader.readLine()) != null) {
-				if(line.startsWith("v  ")) {
-					line = line.substring(3);
+				if(line.startsWith("v ")) {
+					line = line.substring(2);
 					String rawFloats[] = line.split(" ");
 					Vector3f vertex = new Vector3f(Float.parseFloat(rawFloats[0]), Float.parseFloat(rawFloats[1]), Float.parseFloat(rawFloats[2]));
 					vertexList.add(vertex);
@@ -40,8 +40,8 @@ public abstract class ObjLoader{
 					Vector3f normal = new Vector3f(Float.parseFloat(rawFloats[0]), Float.parseFloat(rawFloats[1]), Float.parseFloat(rawFloats[2]));
 					normalList.add(normal);
 				}else
-				if(line.startsWith("f  ")){
-					line = line.substring(3);
+				if(line.startsWith("f ")){
+					line = line.substring(2);
 					String rawInts[] = line.split(" ");
 					Vector3i vFace = new Vector3i(Integer.parseInt(rawInts[0].split("//")[0]),
 													Integer.parseInt(rawInts[1].split("//")[0]),
@@ -58,13 +58,21 @@ public abstract class ObjLoader{
 				}
 			}
 			reader.close();
+			
 			Vector3f[] vertexArray = vertexList.toArray(new Vector3f[vertexList.size()]);
+			
 			int indexArray[] = new int[indexList.size()];
 			for(int i = 0; i < indexList.size(); i++)
 				indexArray[i] = indexList.get(i);
-			Vector3f[] normalArray = new Vector3f[normalIndexList.size()];
+			
+			Vector3f[] normalArray = new Vector3f[vertexList.size()];
 			for(int i = 0; i < normalIndexList.size(); i++) {
-				normalArray[i] = normalList.get(normalIndexList.get(i));
+				int vIndex = indexList.get(i);
+				int nIndex = normalIndexList.get(i);
+				if(normalArray[vIndex] == null)
+					normalArray[vIndex] = new Vector3f(normalList.get(nIndex));
+				else
+					normalArray[vIndex] = normalArray[vIndex].add(normalList.get(nIndex)).normalize();
 			}
 			return new NormalMesh(vertexArray, indexArray, normalArray);
 		} catch (Exception e) {

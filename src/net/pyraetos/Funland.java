@@ -158,9 +158,8 @@ public class Funland {
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
 		
-		Mesh cylMesh = ObjLoader.load("cylinder.obj");
+		Mesh cylMesh = ObjLoader.load("bcylinder.obj");
 		cylinder = cylMesh.spawnModel();
-		cylinder.scale(0.01f);
 		updateRegions();
 	}
 	
