@@ -1,12 +1,8 @@
 package net.pyraetos.objects;
 
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glBufferData;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -18,10 +14,16 @@ import net.pyraetos.util.Sys;
 
 import static org.lwjgl.opengl.GL30.*;
 
-public class Region extends Mesh{
+public class RegionMesh implements Mesh{
 
+	protected int vao;
+	protected int vbo;
+	protected int ibo;
+	
 	protected static PGenerate pg;
 	public static final int SIDE = 9;
+	public static int NUM_VERTICES = SIDE * SIDE;
+	public static int NUM_INDICES = 6 * (SIDE - 1) * (SIDE - 1);
 	public static final float ENTROPY = 4f;
 	public static final long SEED = Sys.randomSeed();
 	
@@ -31,14 +33,11 @@ public class Region extends Mesh{
 	}
 	
 	//On construction, create basic 5x5 region complete with indices
-	public Region() {
-		super();
-		numVertices = SIDE * SIDE;
-        numIndices = 6 * (SIDE - 1) * (SIDE - 1);
+	public RegionMesh() {
         
-		FloatBuffer vbuf = BufferUtils.createFloatBuffer(3 * numVertices);
+		FloatBuffer vbuf = BufferUtils.createFloatBuffer(3 * NUM_VERTICES);
 		initVertices(vbuf);
-		IntBuffer ibuf = BufferUtils.createIntBuffer(numIndices);
+		IntBuffer ibuf = BufferUtils.createIntBuffer(NUM_INDICES);
 		initIndices(ibuf);
 		
 		vao = glGenVertexArrays();
@@ -89,11 +88,17 @@ public class Region extends Mesh{
 		return rm;
 	}
 	
-	//Attrib ptr 1 at this point holds Y data unique to the model
-	@Override
-	protected void specialRender(){
+	public void render() {
+		glBindVertexArray(vao);
+		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+		glDrawElements(GL_TRIANGLES, NUM_INDICES, GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
+		glBindVertexArray(0);
 	}
-	
 }

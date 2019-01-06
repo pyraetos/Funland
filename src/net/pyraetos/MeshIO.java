@@ -2,19 +2,23 @@ package net.pyraetos;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-import net.pyraetos.objects.NormalMesh;
+import net.pyraetos.objects.BasicMesh;
 import net.pyraetos.util.Sys;
 
-public abstract class ObjLoader{
+public abstract class MeshIO{
 
-	public static NormalMesh load(String path) {
+	public static BasicMesh loadOBJ(String path) {
 		File file = new File(path);
 		List<Vector3f> vertexList = new ArrayList<Vector3f>();
 		List<Integer> indexList = new ArrayList<Integer>();
@@ -74,11 +78,51 @@ public abstract class ObjLoader{
 				else
 					normalArray[vIndex] = normalArray[vIndex].add(normalList.get(nIndex)).normalize();
 			}
-			return new NormalMesh(vertexArray, indexArray, normalArray);
+			
+			Color[] colorArray = new Color[vertexList.size()];
+			for(int i = 0; i < colorArray.length; i++) {
+				colorArray[i] = new Color(.8f, 0f, .3f);
+			}
+			
+			return new BasicMesh(vertexArray, indexArray, normalArray, colorArray);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static BasicMesh loadDAT(String path) {
+		File file = new File(path);
+		if(!file.exists()) {
+			Sys.error("DAT " + path + " not found!");
+			System.exit(1);
+		}
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+			Object o = ois.readObject();
+			ois.close();
+			if(!(o instanceof BasicMesh)) throw new Exception("Unable to load " + path + "!");
+			BasicMesh mesh = (BasicMesh)o;
+			return mesh;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static void saveDAT(BasicMesh mesh, String path) {
+		File file = new File(path);
+		if(file.exists()) 
+			file.delete();
+		try {
+			file.createNewFile();
+			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+			oos.writeObject(mesh);
+			oos.flush();
+			oos.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

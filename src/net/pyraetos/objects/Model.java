@@ -1,6 +1,6 @@
 package net.pyraetos.objects;
 
-import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 

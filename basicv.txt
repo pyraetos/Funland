@@ -2,9 +2,11 @@
 
 layout (location=0) in vec3 position;
 layout (location=1) in vec3 normal;
+layout (location=2) in vec3 color;
 
 out vec3 viewedVertex;
 out vec3 fragNormal;
+out vec3 passColor;
 
 uniform mat4 proj;
 uniform mat4 view;
@@ -18,5 +20,6 @@ void main()
     gl_Position = vertex4;
     
     fragNormal = normalize(view * model * vec4(normal, 0.0)).xyz;
-    //fragNormal = normal;
+    
+	passColor = color;
 }

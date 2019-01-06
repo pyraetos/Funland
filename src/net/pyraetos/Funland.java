@@ -4,9 +4,9 @@ import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
-import net.pyraetos.objects.Mesh;
+import net.pyraetos.objects.BasicMesh;
 import net.pyraetos.objects.Model;
-import net.pyraetos.objects.Region;
+import net.pyraetos.objects.RegionMesh;
 import net.pyraetos.objects.RegionModel;
 import net.pyraetos.objects.TestCube;
 import net.pyraetos.shaders.BasicShader;
@@ -36,7 +36,7 @@ public class Funland {
 	private Model testCube;
 	private Model cylinder;
 	private Model tree;
-	private Region regionMesh;
+	private RegionMesh regionMesh;
 	private Map<Integer, Map<Integer, Model>> regions;
 	private Set<Model> activeRegions;
 	private int rX;
@@ -87,8 +87,8 @@ public class Funland {
 			Camera.rotate(Mouse.getAngle(), 1f, 0f, 0f);*/
 		
 		//Window Title and Generate New Regions
-		int newrX = ((int)Math.floor(Camera.x) / (Region.SIDE-1));
-		int newrZ = ((int)Math.floor(Camera.z) / (Region.SIDE-1)); 
+		int newrX = ((int)Math.floor(Camera.x) / (RegionMesh.SIDE-1));
+		int newrZ = ((int)Math.floor(Camera.z) / (RegionMesh.SIDE-1)); 
 		if(newrX != rX || newrZ != rZ) {
 			rX = newrX;
 			rZ = newrZ;
@@ -115,7 +115,7 @@ public class Funland {
 					regions.put(i, new HashMap<Integer, Model>());
 				Map<Integer, Model> internalMap = regions.get(i);
 				if(!internalMap.containsKey(j)) {
-					RegionModel r = regionMesh.spawnModel(Region.SIDE * i - i, Region.SIDE * j - j);
+					RegionModel r = regionMesh.spawnModel(RegionMesh.SIDE * i - i, RegionMesh.SIDE * j - j);
 					internalMap.put(j, r);
 				}
 				activeRegions.add(internalMap.get(j));
@@ -153,18 +153,19 @@ public class Funland {
 	}
 
 	private void initEnvironment() {
-		Mesh cubeMesh = new TestCube();
+		BasicMesh cubeMesh = new TestCube();
 		testCube = cubeMesh.spawnModel();
 		
-		regionMesh = new Region();
+		regionMesh = new RegionMesh();
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
 		
-		Mesh cylMesh = ObjLoader.load("bcylinder.obj");
+		BasicMesh cylMesh = MeshIO.loadDAT("cylinder.dat");
 		cylinder = cylMesh.spawnModel();
 		
-		Mesh treeMesh = ObjLoader.load("tree.obj");
+		BasicMesh treeMesh = MeshIO.loadDAT("tree.dat");
 		tree = treeMesh.spawnModel();
+		
 		updateRegions();
 	}
 	
