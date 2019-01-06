@@ -160,10 +160,13 @@ public class Funland {
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
 		
-		BasicMesh cylMesh = MeshIO.loadDAT("cylinder.dat");
+		BasicMesh cylMesh = MeshIO.loadOBJ("cylinder");
 		cylinder = cylMesh.spawnModel();
 		
-		BasicMesh treeMesh = MeshIO.loadDAT("tree.dat");
+		BasicMesh treeMesh = MeshIO.loadDAT("tree");
+		//BasicMesh treeMesh = MeshIO.loadOBJ("tree");
+		//treeMesh.setColors(new int[]{514}, new Color[] {new Color(0.3f, 0.7f, 0.2f), new Color(0.8f, 0.4f, 0.2f)});
+		//MeshIO.saveDAT(treeMesh,"tree");
 		tree = treeMesh.spawnModel();
 		
 		updateRegions();

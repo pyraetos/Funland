@@ -26,10 +26,10 @@ public class BasicMesh implements Mesh, Serializable{
 	protected transient int numVertices;
 	protected transient int numIndices;
 	
-	private Vector3f[] vertices;
-	private int[] indices;
-	private Vector3f[] normals;
-	private Color[] colors;
+	public Vector3f[] vertices;
+	public int[] indices;
+	public Vector3f[] normals;
+	public Color[] colors;
 	
 	public BasicMesh(Vector3f[] vertices, int[] indices, Vector3f[] normals, Color[] colors) {
 		this.vertices = vertices;
@@ -92,6 +92,18 @@ public class BasicMesh implements Mesh, Serializable{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		
         glBindVertexArray(0);
+	}
+	
+	public void setColors(int[] colorChanges, Color[] newColors) {
+		int colorIndex = 0;
+		Color curColor = newColors[0];
+		for(int i = 0; i < colors.length; i++) {
+			if(colorIndex < colorChanges.length && i == colorChanges[colorIndex]) {
+				curColor = newColors[++colorIndex];
+			}
+			colors[i] = curColor;
+		}
+		init();
 	}
 	
 	public void render() {

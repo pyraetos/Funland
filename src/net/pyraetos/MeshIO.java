@@ -17,9 +17,9 @@ import net.pyraetos.objects.BasicMesh;
 import net.pyraetos.util.Sys;
 
 public abstract class MeshIO{
-
+	
 	public static BasicMesh loadOBJ(String path) {
-		File file = new File(path);
+		File file = new File(path + ".obj");
 		List<Vector3f> vertexList = new ArrayList<Vector3f>();
 		List<Integer> indexList = new ArrayList<Integer>();
 		List<Vector3f> normalList = new ArrayList<Vector3f>();
@@ -81,7 +81,7 @@ public abstract class MeshIO{
 			
 			Color[] colorArray = new Color[vertexList.size()];
 			for(int i = 0; i < colorArray.length; i++) {
-				colorArray[i] = new Color(.8f, 0f, .3f);
+				colorArray[i] = new Color(1f, 0f, 0f);
 			}
 			
 			return new BasicMesh(vertexArray, indexArray, normalArray, colorArray);
@@ -92,7 +92,7 @@ public abstract class MeshIO{
 	}
 	
 	public static BasicMesh loadDAT(String path) {
-		File file = new File(path);
+		File file = new File(path + ".dat");
 		if(!file.exists()) {
 			Sys.error("DAT " + path + " not found!");
 			System.exit(1);
@@ -111,7 +111,7 @@ public abstract class MeshIO{
 	}
 	
 	public static void saveDAT(BasicMesh mesh, String path) {
-		File file = new File(path);
+		File file = new File(path + ".dat");
 		if(file.exists()) 
 			file.delete();
 		try {
@@ -124,5 +124,4 @@ public abstract class MeshIO{
 			e.printStackTrace();
 		}
 	}
-	
 }

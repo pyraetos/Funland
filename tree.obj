@@ -1,5 +1,6 @@
 # Blender v2.79 (sub 0) OBJ File: 'Cylinder.blend'
 # www.blender.org
+# new int[]{514}, new Color[] {new Color(0.3f, 0.7f, 0.2f), new Color(0.8f, 0.4f, 0.2f)}
 mtllib Tree.mtl
 o Cone
 v 0.013741 0.126278 -0.988068
