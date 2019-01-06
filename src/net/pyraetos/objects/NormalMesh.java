@@ -74,4 +74,8 @@ public class NormalMesh extends Mesh{
 		glEnableVertexAttribArray(1);
 	}
 	
+	public void saveObj(String path) {
+		
+	}
+	
 }

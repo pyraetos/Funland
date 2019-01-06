@@ -35,6 +35,7 @@ public class Funland {
 	private static long window;
 	private Model testCube;
 	private Model cylinder;
+	private Model tree;
 	private Region regionMesh;
 	private Map<Integer, Map<Integer, Model>> regions;
 	private Set<Model> activeRegions;
@@ -147,6 +148,7 @@ public class Funland {
 		Camera.view();//Simply don't call this to do a HUD
 		testCube.render();
 		cylinder.render();
+		tree.render();
 		basic.setEnabled(false);
 	}
 
@@ -160,6 +162,9 @@ public class Funland {
 		
 		Mesh cylMesh = ObjLoader.load("bcylinder.obj");
 		cylinder = cylMesh.spawnModel();
+		
+		Mesh treeMesh = ObjLoader.load("tree.obj");
+		tree = treeMesh.spawnModel();
 		updateRegions();
 	}
 	
