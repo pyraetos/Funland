@@ -1,4 +1,4 @@
-package net.pyraetos;
+package net.pyraetos.objects;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +13,7 @@ import java.util.List;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
-import net.pyraetos.objects.BasicMesh;
+import net.pyraetos.Color;
 import net.pyraetos.util.Sys;
 
 public abstract class MeshIO{
@@ -53,12 +53,12 @@ public abstract class MeshIO{
 					Vector3i nFace = new Vector3i(Integer.parseInt(rawInts[0].split("//")[1]),
 							Integer.parseInt(rawInts[1].split("//")[1]),
 							Integer.parseInt(rawInts[2].split("//")[1]));
-					indexList.add(vFace.x-1);
-					indexList.add(vFace.y-1);
 					indexList.add(vFace.z-1);
-					normalIndexList.add(nFace.x-1);
-					normalIndexList.add(nFace.y-1);
+					indexList.add(vFace.y-1);
+					indexList.add(vFace.x-1);
 					normalIndexList.add(nFace.z-1);
+					normalIndexList.add(nFace.y-1);
+					normalIndexList.add(nFace.x-1);
 				}
 			}
 			reader.close();

@@ -5,13 +5,13 @@ import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
 
 import net.pyraetos.objects.BasicMesh;
+import net.pyraetos.objects.MeshIO;
 import net.pyraetos.objects.Model;
 import net.pyraetos.objects.RegionMesh;
 import net.pyraetos.objects.RegionModel;
 import net.pyraetos.objects.TestCube;
-import net.pyraetos.shaders.BasicShader;
+import static net.pyraetos.shaders.Shader.*;
 import net.pyraetos.shaders.Shader;
-import net.pyraetos.shaders.TerrainShader;
 import net.pyraetos.util.Sys;
 
 import java.nio.*;
@@ -35,16 +35,12 @@ public class Funland {
 	private static long window;
 	private Model testCube;
 	private Model cylinder;
-	private Model tree;
+	private Model house;
 	private RegionMesh regionMesh;
 	private Map<Integer, Map<Integer, Model>> regions;
 	private Set<Model> activeRegions;
 	private int rX;
 	private int rZ;
-	
-	//Shaders
-	private Shader basic;
-	private Shader terrain;
 	
 	//Framerate statistics
 	long lastPrintTS;
@@ -104,25 +100,29 @@ public class Funland {
 		cylinder.translate(-0.001f, 0.001f, -.005f);
 		cylinder.rotate(.2f, .4f, .6f);
 	}
-	
+
 	//Not super ideal to generate as a square.. should be circular around camera
 	//Also updates active regions that ought to be rendered
 	private void updateRegions() {
-		activeRegions.clear();
-		for(int i = rX-5; i < rX+6; i++) {
-			for(int j = rZ-5; j < rZ+6; j++) {
-				if(!regions.containsKey(i))
-					regions.put(i, new HashMap<Integer, Model>());
-				Map<Integer, Model> internalMap = regions.get(i);
-				if(!internalMap.containsKey(j)) {
-					RegionModel r = regionMesh.spawnModel(RegionMesh.SIDE * i - i, RegionMesh.SIDE * j - j);
-					internalMap.put(j, r);
+		Sys.thread(()->{
+			synchronized(this) {
+				activeRegions.clear();
+				for(int i = rX-5; i < rX+6; i++) {
+					for(int j = rZ-5; j < rZ+6; j++) {
+						if(!regions.containsKey(i))
+							regions.put(i, new HashMap<Integer, Model>());
+						Map<Integer, Model> internalMap = regions.get(i);
+						if(!internalMap.containsKey(j)) {
+							RegionModel r = regionMesh.spawnModel(RegionMesh.SIDE * i - i, RegionMesh.SIDE * j - j, true);
+							internalMap.put(j, r);
+						}
+						activeRegions.add(internalMap.get(j));
+					}
 				}
-				activeRegions.add(internalMap.get(j));
 			}
-		}
+		});
 	}
-	
+
 	private void handleKeyInput(int key, int action) {
 		if(action == GLFW_PRESS) {
 			Keyboard.press(key);
@@ -138,43 +138,38 @@ public class Funland {
 	private void handleScrollInput(double yoffset) {
 		Mouse.scroll(yoffset);
 	}
-	
+
 	private void render() {
-		terrain.setEnabled(true);
+		Shader.enable(TERRAIN);
 		Camera.view();
-		for(Model region : activeRegions)
-			region.render();
-		basic.setEnabled(true);
+		synchronized(this) {
+			for(Model region : activeRegions)
+				region.render();
+		}
+		Shader.enable(BASIC);
 		Camera.view();//Simply don't call this to do a HUD
 		testCube.render();
 		cylinder.render();
-		tree.render();
-		basic.setEnabled(false);
+		house.render();
+		Shader.disable(ACTIVE_SHADER);
 	}
 
 	private void initEnvironment() {
 		BasicMesh cubeMesh = new TestCube();
 		testCube = cubeMesh.spawnModel();
 		
-		regionMesh = new RegionMesh();
+		regionMesh = new RegionMesh(true);
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
 		
 		BasicMesh cylMesh = MeshIO.loadOBJ("cylinder");
 		cylinder = cylMesh.spawnModel();
 		
-		BasicMesh treeMesh = MeshIO.loadDAT("tree");
-		//BasicMesh treeMesh = MeshIO.loadOBJ("tree");
-		//treeMesh.setColors(new int[]{514}, new Color[] {new Color(0.3f, 0.7f, 0.2f), new Color(0.8f, 0.4f, 0.2f)});
-		//MeshIO.saveDAT(treeMesh,"tree");
-		tree = treeMesh.spawnModel();
+		BasicMesh houseMesh = MeshIO.loadOBJ("house");
+		house = houseMesh.spawnModel();
+		house.translate(5f, 5f, -15f);
 		
 		updateRegions();
-	}
-	
-	private void initShaders() {
-		basic = new BasicShader();
-		terrain = new TerrainShader();
 	}
 	
 	private void updateStats() {
@@ -240,7 +235,6 @@ public class Funland {
 	private void init() {
 		initGL();
 		initEnvironment();
-		initShaders();
 	}
 
 	private void loop(){

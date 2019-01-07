@@ -7,8 +7,15 @@ import static org.lwjgl.opengl.GL30.*;
 import static net.pyraetos.objects.RegionMesh.*;
 
 import java.nio.FloatBuffer;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
+
+import net.pyraetos.Camera;
+import net.pyraetos.shaders.Shader;
+import net.pyraetos.util.Sys;
 
 public class RegionModel extends Model{
 
@@ -16,30 +23,63 @@ public class RegionModel extends Model{
 	private int ybo;
 	private int nbo;
 	
-	//Used to calculate normals on the fringe
+	//Used to calculate normals on the fringe and for trees
 	private Vector3f[][] vertices = new Vector3f[SIDE + 2][SIDE + 2];
+	
+	//Used if useTrees is true
+	private Set<Model> trees;
+	
+	//The buffers for this model
+	private FloatBuffer ybuf;
+	private FloatBuffer nbuf;
+	
+	//Indicates whether model was created async and needs initialization
+	private boolean glInitialized = false;
 	
 	//Once mesh is made, specific model constructed here with x and z
 	//ybuf is populated based on PGenerate, local translate occurs at end
-	public RegionModel(float x, float z, RegionMesh mesh){
+	public RegionModel(float x, float z, RegionMesh mesh, boolean async){
 		super(mesh);
 		
-		FloatBuffer ybuf = BufferUtils.createFloatBuffer(NUM_VERTICES);
+		ybuf = BufferUtils.createFloatBuffer(NUM_VERTICES);
 		initYbuf(x, z, ybuf);
+		nbuf = computeNormals();
 		
-        ybo = glGenBuffers();
+        if(useTrees) createTrees();
+
+        translate(x, 0f, z);
+        
+        if(!async) {
+        	bufferData();
+        	glInitialized = true;
+        }
+	}
+	
+	//GL methods for async initialization
+	public void bufferData() {
+		ybo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, ybo);
         glBufferData(GL_ARRAY_BUFFER, ybuf, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        
-        FloatBuffer nbuf = computeNormals();
         
         nbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, nbo);
         glBufferData(GL_ARRAY_BUFFER, nbuf, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        translate(x, 0f, z);
+	}
+	
+	//Creates trees and translates to vertex
+	private void createTrees() {
+		trees = new HashSet<Model>();
+		for(int i = 1; i <= SIDE; i++) {
+			for(int j = 1; j <= SIDE; j++) {
+				if(Sys.chance(0.01, rand)) {
+					Model tree = treeMesh.spawnModel();
+					tree.translate(vertices[i][j].x, vertices[i][j].y + 0.5f, vertices[i][j].z);
+					trees.add(tree);
+				}
+			}
+		}
 	}
 	
 	//Build ybuf with global PGenerate instance
@@ -81,6 +121,7 @@ public class RegionModel extends Model{
 		return nbuf;
 	}
 	
+	//3D Cross Product
 	private static Vector3f cross(Vector3f a, Vector3f b) {
 		float x = a.y * b.z - a.z * b.y;
 		float y = a.z * b.x - a.x * b.z;
@@ -88,6 +129,7 @@ public class RegionModel extends Model{
 		return new Vector3f(x, y, z);
 	}
 	
+	//Returns the vector from the vertex specified by the first indices to the second
 	private Vector3f to(int i0, int j0, int i1, int j1) {
 		Vector3f dest = new Vector3f(0, 0, 0);
 		vertices[i1][j1].sub(vertices[i0][j0], dest);
@@ -110,6 +152,11 @@ public class RegionModel extends Model{
 	//calls mesh render)
 	@Override
 	public void render() {
+		if(!glInitialized) {
+			bufferData();
+			glInitialized = true;
+		}
+		
 		glBindVertexArray(((RegionMesh)mesh).vao);
 		glBindBuffer(GL_ARRAY_BUFFER, ybo);
 		glVertexAttribPointer(1, 1, GL_FLOAT, false, 0, 0);
@@ -120,6 +167,13 @@ public class RegionModel extends Model{
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 		super.render();
+		
+		if(useTrees) {
+			Shader.enable(Shader.BASIC);
+			Camera.view();
+			for(Model tree : trees) tree.render();
+			Shader.enable(Shader.TERRAIN);
+		}
 	}
 
 }

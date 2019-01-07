@@ -6,6 +6,7 @@ import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Random;
 
 import org.lwjgl.BufferUtils;
 
@@ -20,7 +21,11 @@ public class RegionMesh implements Mesh{
 	protected int vbo;
 	protected int ibo;
 	
+	protected static boolean useTrees;
+	protected static BasicMesh treeMesh;
 	protected static PGenerate pg;
+	protected static Random rand;
+	
 	public static final int SIDE = 9;
 	public static int NUM_VERTICES = SIDE * SIDE;
 	public static int NUM_INDICES = 6 * (SIDE - 1) * (SIDE - 1);
@@ -29,12 +34,20 @@ public class RegionMesh implements Mesh{
 	
 	static {
 		pg = new PGenerate(1024, 1024, SEED);//Don't like hard size, .generate should return if already generated
+		rand = new Random(SEED);
 		pg.setEntropy(ENTROPY);
 	}
 	
-	//On construction, create basic 5x5 region complete with indices
-	public RegionMesh() {
-        
+	//On construction, create basic region complete with indices
+	public RegionMesh(boolean useTrees) {
+		RegionMesh.useTrees = useTrees;
+		if(useTrees) { 
+			treeMesh = MeshIO.loadDAT("tree");
+			//treeMesh = MeshIO.loadOBJ("tree");
+			//treeMesh.setColors(new int[]{514}, new net.pyraetos.Color[] {new net.pyraetos.Color(0.3f, 0.7f, 0.2f), new net.pyraetos.Color(0.8f, 0.4f, 0.2f)});
+			//MeshIO.saveDAT(treeMesh,"tree");
+		}
+		
 		FloatBuffer vbuf = BufferUtils.createFloatBuffer(3 * NUM_VERTICES);
 		initVertices(vbuf);
 		IntBuffer ibuf = BufferUtils.createIntBuffer(NUM_INDICES);
@@ -83,8 +96,8 @@ public class RegionMesh implements Mesh{
 	}
 	
 	//See RegionModel notes
-	public RegionModel spawnModel(float x, float z) {
-		RegionModel rm = new RegionModel(x, z, this);
+	public RegionModel spawnModel(float x, float z, boolean async) {
+		RegionModel rm = new RegionModel(x, z, this, async);
 		return rm;
 	}
 	

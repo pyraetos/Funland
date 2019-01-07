@@ -12,6 +12,16 @@ public abstract class Shader{
 	public int viewUniform;
 	public int modelUniform;
 	public static Shader ACTIVE_SHADER;
+	public static final Shader BASIC = new BasicShader();
+	public static final Shader TERRAIN = new TerrainShader();
+	
+	public static void enable(Shader s) {
+		s.setEnabled(true);
+	}
+	
+	public static void disable(Shader s) {
+		s.setEnabled(false);
+	}
 	
 	public void setEnabled(boolean enabled) {
 		if(enabled) {
