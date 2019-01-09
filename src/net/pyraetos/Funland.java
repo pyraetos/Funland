@@ -39,6 +39,7 @@ public class Funland {
 	private RegionMesh regionMesh;
 	private Map<Integer, Map<Integer, Model>> regions;
 	private Set<Model> activeRegions;
+	private Set<Model> activeRegionsWaiting;
 	private int rX;
 	private int rZ;
 	
@@ -105,20 +106,22 @@ public class Funland {
 	//Also updates active regions that ought to be rendered
 	private void updateRegions() {
 		Sys.thread(()->{
+			activeRegionsWaiting = new HashSet<Model>();
+			for(int i = rX-5; i < rX+6; i++) {
+				for(int j = rZ-5; j < rZ+6; j++) {
+					if(!regions.containsKey(i))
+						regions.put(i, new HashMap<Integer, Model>());
+					Map<Integer, Model> internalMap = regions.get(i);
+					if(!internalMap.containsKey(j)) {
+						RegionModel r = regionMesh.spawnModel(RegionMesh.SIDE * i - i, RegionMesh.SIDE * j - j, true);
+						internalMap.put(j, r);
+					}
+					activeRegionsWaiting.add(internalMap.get(j));
+				}
+			}
 			synchronized(this) {
 				activeRegions.clear();
-				for(int i = rX-5; i < rX+6; i++) {
-					for(int j = rZ-5; j < rZ+6; j++) {
-						if(!regions.containsKey(i))
-							regions.put(i, new HashMap<Integer, Model>());
-						Map<Integer, Model> internalMap = regions.get(i);
-						if(!internalMap.containsKey(j)) {
-							RegionModel r = regionMesh.spawnModel(RegionMesh.SIDE * i - i, RegionMesh.SIDE * j - j, true);
-							internalMap.put(j, r);
-						}
-						activeRegions.add(internalMap.get(j));
-					}
-				}
+				activeRegions = activeRegionsWaiting;
 			}
 		});
 	}
@@ -138,19 +141,20 @@ public class Funland {
 	private void handleScrollInput(double yoffset) {
 		Mouse.scroll(yoffset);
 	}
-
+ 
 	private void render() {
 		Shader.enable(TERRAIN);
 		Camera.view();
 		synchronized(this) {
-			for(Model region : activeRegions)
+			for(Model region : activeRegions) {
 				region.render();
+			}
 		}
 		Shader.enable(BASIC);
 		Camera.view();//Simply don't call this to do a HUD
 		testCube.render();
 		cylinder.render();
-		house.render();
+		//house.render();
 		Shader.disable(ACTIVE_SHADER);
 	}
 
@@ -161,13 +165,14 @@ public class Funland {
 		regionMesh = new RegionMesh(true);
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
+		activeRegionsWaiting = new HashSet<Model>();
 		
 		BasicMesh cylMesh = MeshIO.loadOBJ("cylinder");
 		cylinder = cylMesh.spawnModel();
 		
-		BasicMesh houseMesh = MeshIO.loadOBJ("house");
-		house = houseMesh.spawnModel();
-		house.translate(5f, 5f, -15f);
+		//BasicMesh houseMesh = MeshIO.loadOBJ("house");
+		//house = houseMesh.spawnModel();
+		//house.translate(5f, 5f, -15f);
 		
 		updateRegions();
 	}
