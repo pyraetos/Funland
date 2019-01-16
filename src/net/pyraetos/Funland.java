@@ -154,7 +154,7 @@ public class Funland {
 		Camera.view();//Simply don't call this to do a HUD
 		testCube.render();
 		cylinder.render();
-		//house.render();
+		house.render();
 		Shader.disable(ACTIVE_SHADER);
 	}
 
@@ -170,9 +170,9 @@ public class Funland {
 		BasicMesh cylMesh = MeshIO.loadOBJ("cylinder");
 		cylinder = cylMesh.spawnModel();
 		
-		//BasicMesh houseMesh = MeshIO.loadOBJ("house");
-		//house = houseMesh.spawnModel();
-		//house.translate(5f, 5f, -15f);
+		BasicMesh houseMesh = MeshIO.loadOBJ("bigcubemany");
+		house = houseMesh.spawnModel();
+		house.translate(5f, 5f, -15f);
 		
 		updateRegions();
 	}

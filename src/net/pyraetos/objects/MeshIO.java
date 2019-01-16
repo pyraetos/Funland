@@ -78,12 +78,14 @@ public abstract class MeshIO{
 				else
 					normalArray[vIndex] = normalArray[vIndex].add(normalList.get(nIndex)).normalize();
 			}
+			for(int i = 0; i < normalArray.length; i++) {
+				if(normalArray[i] == null) normalArray[i] = new Vector3f(0f,0f,0f);
+			}
 			
 			Color[] colorArray = new Color[vertexList.size()];
 			for(int i = 0; i < colorArray.length; i++) {
 				colorArray[i] = new Color(1f, 0f, 0f);
 			}
-			
 			return new BasicMesh(vertexArray, indexArray, normalArray, colorArray);
 		} catch (Exception e) {
 			e.printStackTrace();
