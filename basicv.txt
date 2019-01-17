@@ -19,7 +19,7 @@ void main()
 	viewedVertex = viewedVertex4.xyz;
     gl_Position = vertex4;
     
-    fragNormal = normalize(view * model * vec4(normal, 0.0)).xyz;
+    fragNormal = normalize(model * vec4(normal, 0.0)).xyz;
     
 	passColor = color;
 }

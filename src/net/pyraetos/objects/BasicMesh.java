@@ -36,7 +36,6 @@ public class BasicMesh implements Mesh, Serializable{
 		this.indices = indices;
 		this.normals = normals;
 		this.colors = colors;
-		
 		init();
 	}
 	
