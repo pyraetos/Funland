@@ -42,7 +42,7 @@ public class RegionMesh implements Mesh{
 	public RegionMesh(boolean useTrees) {
 		RegionMesh.useTrees = useTrees;
 		if(useTrees) { 
-			treeMesh = MeshIO.loadDAT("tree");
+			treeMesh = MeshIO.loadOBJ("tree");
 			//treeMesh = MeshIO.loadOBJ("tree");
 			//treeMesh.setColors(new int[]{514}, new net.pyraetos.Color[] {new net.pyraetos.Color(0.3f, 0.7f, 0.2f), new net.pyraetos.Color(0.8f, 0.4f, 0.2f)});
 			//MeshIO.saveDAT(treeMesh,"tree");

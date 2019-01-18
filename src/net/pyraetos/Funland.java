@@ -10,6 +10,8 @@ import net.pyraetos.objects.Model;
 import net.pyraetos.objects.RegionMesh;
 import net.pyraetos.objects.RegionModel;
 import net.pyraetos.objects.TestCube;
+import net.pyraetos.objects.TestQuad;
+
 import static net.pyraetos.shaders.Shader.*;
 import net.pyraetos.shaders.Shader;
 import net.pyraetos.util.Sys;
@@ -30,10 +32,12 @@ public class Funland {
 
 	//Options
 	public static final boolean CULL_BACK = false;
+	public static final int TERRAIN_DISTANCE = 10;
 	
 	//State
 	private static long window;
 	private Model testCube;
+	private Model testQuad;
 	private Model cylinder;
 	private Model house;
 	private RegionMesh regionMesh;
@@ -107,8 +111,8 @@ public class Funland {
 	private void updateRegions() {
 		Sys.thread(()->{
 			activeRegionsWaiting = new HashSet<Model>();
-			for(int i = rX-5; i < rX+6; i++) {
-				for(int j = rZ-5; j < rZ+6; j++) {
+			for(int i = rX - TERRAIN_DISTANCE; i < rX+ TERRAIN_DISTANCE + 1; i++) {
+				for(int j = rZ - TERRAIN_DISTANCE; j < rZ+ TERRAIN_DISTANCE + 1; j++) {
 					if(!regions.containsKey(i))
 						regions.put(i, new HashMap<Integer, Model>());
 					Map<Integer, Model> internalMap = regions.get(i);
@@ -153,6 +157,7 @@ public class Funland {
 		Shader.enable(BASIC);
 		Camera.view();//Simply don't call this to do a HUD
 		testCube.render();
+		testQuad.render();
 		cylinder.render();
 		house.render();
 		Shader.disable(ACTIVE_SHADER);
@@ -161,6 +166,9 @@ public class Funland {
 	private void initEnvironment() {
 		BasicMesh cubeMesh = new TestCube();
 		testCube = cubeMesh.spawnModel();
+		
+		BasicMesh quadMesh = new TestQuad();
+		testQuad = quadMesh.spawnModel();
 		
 		regionMesh = new RegionMesh(true);
 		regions = new HashMap<Integer, Map<Integer, Model>>();

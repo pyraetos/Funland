@@ -8,7 +8,9 @@ import java.io.FileReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -63,12 +65,33 @@ public abstract class MeshIO{
 			}
 			reader.close();
 			
-			Vector3f[] vertexArray = vertexList.toArray(new Vector3f[vertexList.size()]);
-			
+			Map<UniqueAttribute, Integer> uaMap = new HashMap<UniqueAttribute, Integer>();
+			List<UniqueAttribute> uaList = new ArrayList<UniqueAttribute>();
 			int indexArray[] = new int[indexList.size()];
-			for(int i = 0; i < indexList.size(); i++)
-				indexArray[i] = indexList.get(i);
 			
+			for(int i = 0; i < indexList.size(); i++) {
+				int index = indexList.get(i);
+				int normalIndex = normalIndexList.get(i);
+				Vector3f vertex = vertexList.get(index);
+				Vector3f normal = normalList.get(normalIndex);
+				UniqueAttribute ua = new UniqueAttribute(vertex, normal, new Color(1f, 0f, 0f));
+				if(!uaMap.containsKey(ua)) {
+					uaMap.put(ua, uaMap.size());
+					uaList.add(ua);
+				}
+				indexArray[i] = uaMap.get(ua);
+			}
+			
+			UniqueAttribute uaArray[] = uaList.toArray(new UniqueAttribute[uaList.size()]);
+			
+			//Vector3f[] vertexArray = vertexList.toArray(new Vector3f[vertexList.size()]);
+			
+			/*int indexArray[] = new int[indexList.size()];
+			for(int i = 0; i < indexList.size(); i++)
+				indexArray[i] = indexList.get(i);*/
+			
+			/*Vector3f[] normalArray = new Vector3f[normalList.size()];
+			normalList.toArray(normalArray);
 			Vector3f[] normalArray = new Vector3f[vertexList.size()];
 			for(int i = 0; i < normalIndexList.size(); i++) {
 				int vIndex = indexList.get(i);
@@ -80,13 +103,9 @@ public abstract class MeshIO{
 			}
 			for(int i = 0; i < normalArray.length; i++) {
 				if(normalArray[i] == null) normalArray[i] = new Vector3f(0f,0f,0f);
-			}
+			}*/
 			
-			Color[] colorArray = new Color[vertexList.size()];
-			for(int i = 0; i < colorArray.length; i++) {
-				colorArray[i] = new Color(1f, 0f, 0f);
-			}
-			return new BasicMesh(vertexArray, indexArray, normalArray, colorArray);
+			return new BasicMesh(uaArray, indexArray);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

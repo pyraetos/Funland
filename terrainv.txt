@@ -4,7 +4,7 @@ layout (location=0) in vec3 position;
 layout (location=1) in float y;
 layout (location=2) in vec3 inNormal;
 
-out vec3 normal;
+out vec3 fragNormal;
 out vec3 viewedVertex;
 
 uniform mat4 proj;
@@ -18,6 +18,5 @@ void main()
 	vec4 vertex4 = proj * viewedVertex4;
 	viewedVertex = viewedVertex4.xyz;
     gl_Position = vertex4;
-    normal = inNormal;
-    //normal = normalize(modelView * vec4(inNormal, 0.0)).xyz;
+    fragNormal = inNormal;
 }

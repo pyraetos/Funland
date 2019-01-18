@@ -1,6 +1,6 @@
 #version 330
 
-layout (location=0) in vec3 position;
+layout (location=0) in vec3 vertex;
 layout (location=1) in vec3 normal;
 layout (location=2) in vec3 color;
 
@@ -14,7 +14,7 @@ uniform mat4 model;
 
 void main()
 {
-	vec4 viewedVertex4 = view * model * vec4(position, 1.0);
+	vec4 viewedVertex4 = view * model * vec4(vertex, 1.0);
 	vec4 vertex4 = proj * viewedVertex4;
 	viewedVertex = viewedVertex4.xyz;
     gl_Position = vertex4;

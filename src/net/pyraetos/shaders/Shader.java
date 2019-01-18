@@ -48,7 +48,7 @@ public abstract class Shader{
 		glCompileShader(fs);
 		int cfs = glGetShaderi(fs, GL_COMPILE_STATUS);
 		if(cfs == 0) {
-			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(vs));
+			Sys.error("Shader compile error!\n" + glGetShaderInfoLog(fs));
 			Funland.close();
 		}
 		
@@ -58,7 +58,7 @@ public abstract class Shader{
         glLinkProgram(program);
         int linked = glGetProgrami(program, GL_LINK_STATUS);
         if(linked == 0) {
-			Sys.error("Shader linking error!\n" + glGetShaderInfoLog(vs));
+			Sys.error("Shader linking error!\n" + glGetShaderInfoLog(vs) + "\n" + glGetShaderInfoLog(fs));
 			Funland.close();
 		}
 	}
