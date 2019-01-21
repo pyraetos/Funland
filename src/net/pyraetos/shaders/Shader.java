@@ -13,7 +13,8 @@ public abstract class Shader{
 	public int modelUniform;
 	public static Shader ACTIVE_SHADER;
 	public static final Shader BASIC = new BasicShader();
-	public static final Shader TERRAIN = new TerrainShader();
+	public static final Shader TEST = new TestShader();
+	public static final Shader SHADOW = new ShadowShader();
 	
 	public static void enable(Shader s) {
 		s.setEnabled(true);
@@ -36,7 +37,7 @@ public abstract class Shader{
 	
 	protected void initShader(String vertexPath, String fragmentPath) {
 		int vs = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vs, Sys.load(vertexPath));
+		glShaderSource(vs, Sys.load("Shaders/" + vertexPath));
 		glCompileShader(vs);
 		int cvs = glGetShaderi(vs, GL_COMPILE_STATUS);
 		if(cvs == 0) {
@@ -44,7 +45,7 @@ public abstract class Shader{
 		}
 		
 		int fs = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fs, Sys.load(fragmentPath));
+		glShaderSource(fs, Sys.load("Shaders/" + fragmentPath));
 		glCompileShader(fs);
 		int cfs = glGetShaderi(fs, GL_COMPILE_STATUS);
 		if(cfs == 0) {

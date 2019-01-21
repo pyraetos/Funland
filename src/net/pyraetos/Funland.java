@@ -8,7 +8,6 @@ import net.pyraetos.objects.BasicMesh;
 import net.pyraetos.objects.MeshIO;
 import net.pyraetos.objects.Model;
 import net.pyraetos.objects.RegionMesh;
-import net.pyraetos.objects.RegionModel;
 import net.pyraetos.objects.TestCube;
 import net.pyraetos.objects.TestQuad;
 
@@ -20,11 +19,15 @@ import java.nio.*;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL32.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
@@ -32,7 +35,8 @@ public class Funland {
 
 	//Options
 	public static final boolean CULL_BACK = false;
-	public static final int TERRAIN_DISTANCE = 10;
+	public static final int TERRAIN_DISTANCE = 20;
+	public static final boolean SRGB = false;
 	
 	//State
 	private static long window;
@@ -40,12 +44,16 @@ public class Funland {
 	private Model testQuad;
 	private Model cylinder;
 	private Model house;
-	private RegionMesh regionMesh;
 	private Map<Integer, Map<Integer, Model>> regions;
 	private Set<Model> activeRegions;
-	private Set<Model> activeRegionsWaiting;
 	private int rX;
 	private int rZ;
+	
+	//Terrain generation logic
+	private Set<Model> activeRegionsWaiting;
+	private Queue<Tuple> newRegions;
+	private long lastGenTS;
+	private boolean needRegionUpdate;
 	
 	//Framerate statistics
 	long lastPrintTS;
@@ -87,17 +95,24 @@ public class Funland {
 		/*if(Mouse.scrolled())
 			Camera.rotate(Mouse.getAngle(), 1f, 0f, 0f);*/
 		
-		//Window Title and Generate New Regions
+		//Window Title
+		glfwSetWindowTitle(window, "Funland - FPS: " + average +
+				" | x = " + Sys.round1(Camera.x) + " y = " + Sys.round1(Camera.y) + " z = " + Sys.round1(Camera.z) +
+				" | rX = " + rX + " rZ = " + rZ);
+		
+		//Work on new region queue
+		tryGenRegion();
+		
+		//Update regions
 		int newrX = ((int)Math.floor(Camera.x) / (RegionMesh.SIDE-1));
 		int newrZ = ((int)Math.floor(Camera.z) / (RegionMesh.SIDE-1)); 
 		if(newrX != rX || newrZ != rZ) {
 			rX = newrX;
 			rZ = newrZ;
-			updateRegions();
+			reorderNewRegions();
+			needRegionUpdate = true;
 		}
-		glfwSetWindowTitle(window, "Funland - FPS: " + average +
-				" | x = " + Sys.round1(Camera.x) + " y = " + Sys.round1(Camera.y) + " z = " + Sys.round1(Camera.z) +
-				" | rX = " + rX + " rZ = " + rZ);
+		updateRegions();
 		
 		//Logic
 		testCube.translate(0.001f, -0.001f, -.005f);
@@ -106,28 +121,48 @@ public class Funland {
 		cylinder.rotate(.2f, .4f, .6f);
 	}
 
+	private void tryGenRegion() {
+		if(!newRegions.isEmpty()) {
+			long currTS = Sys.time();
+			if(currTS - lastGenTS > 100) {
+				Tuple t = newRegions.poll();
+				Model r = new RegionMesh(RegionMesh.SIDE * t.i - t.i, RegionMesh.SIDE * t.j - t.j, true).spawnModel();
+				regions.get(t.i).put(t.j, r);
+				lastGenTS = currTS;
+				needRegionUpdate = true;
+			}
+		}
+	}
+
+	private void reorderNewRegions() {
+		if(newRegions.isEmpty()) return;
+		Queue<Tuple> newQueue = new PriorityQueue<Tuple>();
+		for(Tuple t : newRegions) newQueue.offer(t);
+		newRegions = newQueue;
+	}
+	
 	//Not super ideal to generate as a square.. should be circular around camera
 	//Also updates active regions that ought to be rendered
 	private void updateRegions() {
-		Sys.thread(()->{
+		if(needRegionUpdate) {
 			activeRegionsWaiting = new HashSet<Model>();
-			for(int i = rX - TERRAIN_DISTANCE; i < rX+ TERRAIN_DISTANCE + 1; i++) {
-				for(int j = rZ - TERRAIN_DISTANCE; j < rZ+ TERRAIN_DISTANCE + 1; j++) {
+			for(int i = rX - TERRAIN_DISTANCE; i < rX + TERRAIN_DISTANCE + 1; i++) {
+				for(int j = rZ - TERRAIN_DISTANCE; j < rZ + TERRAIN_DISTANCE + 1; j++) {
 					if(!regions.containsKey(i))
 						regions.put(i, new HashMap<Integer, Model>());
 					Map<Integer, Model> internalMap = regions.get(i);
 					if(!internalMap.containsKey(j)) {
-						RegionModel r = regionMesh.spawnModel(RegionMesh.SIDE * i - i, RegionMesh.SIDE * j - j, true);
-						internalMap.put(j, r);
+						Tuple t = new Tuple(i, j);
+						if(!newRegions.contains(t)) newRegions.offer(t);
+					}else{
+						activeRegionsWaiting.add(internalMap.get(j));
 					}
-					activeRegionsWaiting.add(internalMap.get(j));
 				}
 			}
-			synchronized(this) {
-				activeRegions.clear();
-				activeRegions = activeRegionsWaiting;
-			}
-		});
+			activeRegions.clear();
+			activeRegions = activeRegionsWaiting;
+			needRegionUpdate = false;
+		}
 	}
 
 	private void handleKeyInput(int key, int action) {
@@ -147,19 +182,17 @@ public class Funland {
 	}
  
 	private void render() {
-		Shader.enable(TERRAIN);
-		Camera.view();
-		synchronized(this) {
-			for(Model region : activeRegions) {
-				region.render();
-			}
-		}
 		Shader.enable(BASIC);
-		Camera.view();//Simply don't call this to do a HUD
+		Camera.view();
+		for(Model region : activeRegions) {
+			region.render();
+		}
 		testCube.render();
-		testQuad.render();
 		cylinder.render();
 		house.render();
+		Shader.enable(TEST);
+		Camera.view();
+		testQuad.render();
 		Shader.disable(ACTIVE_SHADER);
 	}
 
@@ -170,10 +203,11 @@ public class Funland {
 		BasicMesh quadMesh = new TestQuad();
 		testQuad = quadMesh.spawnModel();
 		
-		regionMesh = new RegionMesh(true);
 		regions = new HashMap<Integer, Map<Integer, Model>>();
 		activeRegions = new HashSet<Model>();
 		activeRegionsWaiting = new HashSet<Model>();
+		newRegions = new PriorityQueue<Tuple>();
+		lastGenTS = 0;
 		
 		BasicMesh cylMesh = MeshIO.loadOBJ("cylinder");
 		cylinder = cylMesh.spawnModel();
@@ -182,6 +216,7 @@ public class Funland {
 		house = houseMesh.spawnModel();
 		house.translate(5f, 5f, -15f);
 		
+		needRegionUpdate = true;
 		updateRegions();
 	}
 	
@@ -232,11 +267,25 @@ public class Funland {
 		glClearColor(0.5f, 0.7f, 1.0f, 0.0f);
 		glFrontFace(GL_CW);
 		glEnable(GL_DEPTH_TEST);
+		if(SRGB) glEnable(GL_FRAMEBUFFER_SRGB);
 		if(CULL_BACK) {
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
 		}
 		
+		int texture = glGenTextures();
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		int framebuffer = glGenFramebuffers();
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		previousTS = currentTS = lastPrintTS = Sys.time();
 		nextIndex = 0;
@@ -270,4 +319,38 @@ public class Funland {
 		glfwSetErrorCallback(null).free();
 	}
 
+	private class Tuple implements Comparable<Tuple>{
+		
+		int i;
+		int j;
+		
+		Tuple(int i, int j){
+			this.i = i;
+			this.j = j;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if(other instanceof Tuple) {
+				Tuple t = (Tuple)other;
+				return t.i == i && t.j == j;
+			}
+			return false;
+		}
+		
+		@Override
+		public int hashCode() {
+			return (i << 16) ^ j;
+		}
+		@Override
+		public int compareTo(Tuple o){
+			double thisDist = Math.pow(rX - i, 2) + Math.pow(rZ - j, 2);
+			double otherDist = Math.pow(rX - o.i, 2) + Math.pow(rZ - o.j, 2);
+			if(thisDist < otherDist) return -1;
+			if(thisDist > otherDist) return 1;
+			return 0;
+		}
+		
+	}
+	
 }

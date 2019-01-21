@@ -1,0 +1,25 @@
+#version 330
+
+layout (location=0) in vec3 vertex;
+layout (location=1) in vec3 normal;
+layout (location=2) in vec3 color;
+
+out vec3 viewedVertex;
+out vec3 fragNormal;
+out vec3 passColor;
+
+uniform mat4 proj;
+uniform mat4 view;
+uniform mat4 model;
+
+void main()
+{
+	vec4 viewedVertex4 = view * model * vec4(vertex, 1.0);
+	vec4 vertex4 = proj * viewedVertex4;
+	viewedVertex = viewedVertex4.xyz;
+    gl_Position = vertex4;
+    
+    fragNormal = normalize(model * vec4(normal, 0.0)).xyz;
+    
+	passColor = color;
+}

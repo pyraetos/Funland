@@ -4,10 +4,10 @@ import static org.lwjgl.opengl.GL20.*;
 
 import net.pyraetos.Matrices;
 
-public class TerrainShader extends Shader{
+public class ShadowShader extends Shader{
 	
-	public TerrainShader() {
-		initShader("terrainv.txt", "terrainf.txt");
+	public ShadowShader() {
+		initShader("shadowv.txt", "shadowf.txt");
 	}
 	
 	@Override
