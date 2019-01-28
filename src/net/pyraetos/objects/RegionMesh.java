@@ -18,6 +18,8 @@ public class RegionMesh extends BasicMesh{
 	
 	protected boolean useTrees;
 	protected long seed;
+	protected float x;
+	protected float z;
 	protected transient Set<Model> trees;
 	protected transient Model model;
 	
@@ -25,7 +27,7 @@ public class RegionMesh extends BasicMesh{
 	
 	public static final float ENTROPY = 4f;
 	public static final long SEED = Sys.randomSeed();
-	public static final Color COLOR = new Color(0.7f, 1.0f, 0.5f);
+	public static final Color COLOR = new Color(0.6f, 1f, 0.5f);
 	public static final double TREE_CHANCE = 0.01d;
 	public static final BasicMesh TREE_MESH = MeshIO.loadOBJ("tree");;
 	
@@ -55,6 +57,8 @@ public class RegionMesh extends BasicMesh{
 	
 	public RegionMesh(float x, float z, boolean useTrees) {
 		super(initUAs(x, z), INDICES);
+		this.x = x;
+		this.z = z;
 		this.useTrees = useTrees;
 		this.seed = SEED ^ Float.floatToIntBits(x) ^ Float.floatToIntBits(z);
 		init();
@@ -73,6 +77,7 @@ public class RegionMesh extends BasicMesh{
 				}
 			}
 		}
+		centerMass = new Vector3f(x, 0f, z);
 		model = new Model(this);
 	}
 	

@@ -10,6 +10,10 @@ public abstract class Vectors{
 		float z = a.x * b.y - a.y * b.x;
 		return new Vector3f(x, y, z);
 	}
+	
+	public static float dot(Vector3f a, Vector3f b) {
+		return a.x * b.x + a.y * b.y + a.z * b.z;
+	}
 
 	public static Vector3f to(Vector3f a, Vector3f b) {
 		Vector3f dest = new Vector3f(0, 0, 0);

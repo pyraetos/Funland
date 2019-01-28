@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL20.*;
 import java.nio.FloatBuffer;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import net.pyraetos.Matrices;
 import net.pyraetos.shaders.Shader;
@@ -21,6 +22,8 @@ public class Model{
 	protected boolean transformed;
 	protected int modelID;
 	
+	protected Vector3f pos;
+	
 	public static int nextModelID = 0x0;
 	
 	public Model(Mesh mesh) {
@@ -32,16 +35,21 @@ public class Model{
 		rotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		scaleMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		model = Matrices.toBuffer(modelMatrix);
+		
+		pos = mesh.centerMass();
 	}
 	
 	public void translate(float x, float y, float z) {
 		translationMatrix.translate(x, y, z);
+		pos.x += x;
+		pos.y += y;
+		pos.z += z;
 		transformed = true;
 	}
 	
-	float rx = 0f;
-	float ry = 0f;
-	float rz = 0f;
+	private float rx = 0f;
+	private float ry = 0f;
+	private float rz = 0f;
 	
 	public void rotate(float xAng, float yAng, float zAng) {
 		rx = Sys.simplifyAngler(rx + Sys.toRadians(xAng));
@@ -71,6 +79,10 @@ public class Model{
 		rotationMatrix.mulAffine(scaleMatrix, modelMatrix);
 		translationMatrix.mulAffine(modelMatrix, modelMatrix);
 		model = Matrices.toBuffer(modelMatrix);
+	}
+	
+	public Vector3f getPos() {
+		return pos;
 	}
 	
 	@Override

@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 @SuppressWarnings("serial")
@@ -23,6 +24,7 @@ public class BasicMesh implements Mesh, Serializable{
 	protected transient int cbo;
 	protected transient int numUAs;
 	protected transient int numIndices;
+	protected transient Vector3f centerMass;
 	
 	public UniqueAttribute[] uas;
 	public int[] indices;
@@ -81,6 +83,8 @@ public class BasicMesh implements Mesh, Serializable{
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         
         glBindVertexArray(0);
+        
+        centerMass = new Vector3f(0f, 0f, 0f);
 	}
 	
 	public void render() {
@@ -104,5 +108,10 @@ public class BasicMesh implements Mesh, Serializable{
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException{
 		stream.defaultReadObject();
 		init();
+	}
+
+	@Override
+	public Vector3f centerMass(){
+		return centerMass;
 	}
 }

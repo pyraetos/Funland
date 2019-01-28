@@ -185,14 +185,14 @@ public class Funland {
 		Shader.enable(BASIC);
 		Camera.view();
 		for(Model region : activeRegions) {
-			region.render();
+			if(Camera.isInFrontOfCamera(region)) region.render();
 		}
-		testCube.render();
-		cylinder.render();
-		house.render();
+		if(Camera.isInFrontOfCamera(testCube)) testCube.render();
+		if(Camera.isInFrontOfCamera(cylinder)) cylinder.render();
+		if(Camera.isInFrontOfCamera(house)) house.render();
 		Shader.enable(TEST);
 		Camera.view();
-		testQuad.render();
+		if(Camera.isInFrontOfCamera(testQuad)) testQuad.render();
 		Shader.disable(ACTIVE_SHADER);
 	}
 
@@ -342,6 +342,7 @@ public class Funland {
 		public int hashCode() {
 			return (i << 16) ^ j;
 		}
+		
 		@Override
 		public int compareTo(Tuple o){
 			double thisDist = Math.pow(rX - i, 2) + Math.pow(rZ - j, 2);
