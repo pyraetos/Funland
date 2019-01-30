@@ -1,0 +1,14 @@
+#version 330
+
+uniform sampler2D uTexture;
+
+in vec2 passTexCoord;
+
+out vec4 fragColor;
+
+void main()
+{
+	//fragColor = vec4(passTexCoord,0,1);
+	//fragColor = vec4(max(textureSize(uTexture, 0), 1), texture(uTexture, passTexCoord) == vec4(0,0,0,1) ? 0 : 1, 1);
+	fragColor = texture(uTexture, passTexCoord);
+}

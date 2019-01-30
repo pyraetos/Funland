@@ -3,8 +3,11 @@
 in vec3 viewedVertex;
 in vec3 fragNormal;
 in vec3 passColor;
+in vec3 lightViewedVertex;
 
 out vec4 fragColor;
+
+uniform sampler2D shadowMap;
 
 float light(){
 
@@ -12,6 +15,19 @@ float light(){
 	float power = 2.0;
 	
 	return pow(max(dot(normalize(fragNormal), normalize(vec3(1, 2, 1))), 0.0), power);
+}
+
+bool shadow(){
+	//Bias for shadow acne
+	float bias = 0.02;
+
+    //Transform from screen coordinates to texture coordinates
+    vec3 coords = lightViewedVertex * 0.5 + 0.5;
+    
+    if(coords.z - bias < texture(shadowMap, coords.xy).r){
+       return false;
+    }
+    return true;
 }
 
 float fog(){
@@ -27,7 +43,8 @@ float fog(){
 
 void main()
 {
-	float lightFactor = light();
+	bool inShadow = shadow();
+	float lightFactor = inShadow ? 0 : light();
 	float fogFactor = fog();
 	vec3 fog = vec3(0.5, 0.7, 1.0);
 	vec3 base = passColor;

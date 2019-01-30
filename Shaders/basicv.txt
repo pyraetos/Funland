@@ -7,10 +7,14 @@ layout (location=2) in vec3 color;
 out vec3 viewedVertex;
 out vec3 fragNormal;
 out vec3 passColor;
+out vec3 lightViewedVertex;
 
 uniform mat4 proj;
 uniform mat4 view;
 uniform mat4 model;
+
+uniform mat4 lightView;
+uniform mat4 lightProj;
 
 void main()
 {
@@ -18,6 +22,8 @@ void main()
 	vec4 vertex4 = proj * viewedVertex4;
 	viewedVertex = viewedVertex4.xyz;
     gl_Position = vertex4;
+    
+    lightViewedVertex = (lightProj * lightView * model * vec4(vertex, 1.0)).xyz;
     
     fragNormal = normalize(model * vec4(normal, 0.0)).xyz;
     

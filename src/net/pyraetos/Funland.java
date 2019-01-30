@@ -8,6 +8,7 @@ import net.pyraetos.objects.BasicMesh;
 import net.pyraetos.objects.MeshIO;
 import net.pyraetos.objects.Model;
 import net.pyraetos.objects.RegionMesh;
+import net.pyraetos.objects.ShadowMapQuadMesh;
 import net.pyraetos.objects.TestCube;
 import net.pyraetos.objects.TestQuad;
 
@@ -37,6 +38,7 @@ public class Funland {
 	public static final boolean CULL_BACK = false;
 	public static final int TERRAIN_DISTANCE = 20;
 	public static final boolean SRGB = false;
+	public static final int SHADOW_MAP_DIM = 2048;
 	
 	//State
 	private static long window;
@@ -54,6 +56,11 @@ public class Funland {
 	private Queue<Tuple> newRegions;
 	private long lastGenTS;
 	private boolean needRegionUpdate;
+	
+	//Shadows
+	private int sTex;
+	private int sFBO;
+	private Model smq;
 	
 	//Framerate statistics
 	long lastPrintTS;
@@ -115,9 +122,9 @@ public class Funland {
 		updateRegions();
 		
 		//Logic
-		testCube.translate(0.001f, -0.001f, -.005f);
+		testCube.translate(0.001f, -0.001f, -.01f);
 		testCube.rotate(1f, 1f, 0f);
-		cylinder.translate(-0.001f, 0.001f, -.005f);
+		cylinder.translate(-0.001f, 0.001f, -.01f);
 		cylinder.rotate(.2f, .4f, .6f);
 	}
 
@@ -182,7 +189,10 @@ public class Funland {
 	}
  
 	private void render() {
+		
+		renderShadowMap();
 		Shader.enable(BASIC);
+		glBindTexture(GL_TEXTURE_2D, sTex);
 		Camera.view();
 		for(Model region : activeRegions) {
 			if(Camera.isInFrontOfCamera(region)) region.render();
@@ -190,10 +200,32 @@ public class Funland {
 		if(Camera.isInFrontOfCamera(testCube)) testCube.render();
 		if(Camera.isInFrontOfCamera(cylinder)) cylinder.render();
 		if(Camera.isInFrontOfCamera(house)) house.render();
-		Shader.enable(TEST);
+		/*Shader.enable(TEST);
 		Camera.view();
-		if(Camera.isInFrontOfCamera(testQuad)) testQuad.render();
+		if(Camera.isInFrontOfCamera(testQuad)) testQuad.render();*/
 		Shader.disable(ACTIVE_SHADER);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	
+	private void renderShadowMap() {
+		glBindFramebuffer(GL_FRAMEBUFFER, sFBO);
+		glViewport(0, 0, SHADOW_MAP_DIM, SHADOW_MAP_DIM);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		Shader.enable(SHADOW);
+		glBindTexture(GL_TEXTURE_2D, sTex);
+		for(Model region : activeRegions) {
+			region.render();
+		}
+		testCube.render();
+		cylinder.render();
+		house.render();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, 1200, 900);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Shader.enable(SMQ);
+		Camera.view();
+		smq.render();
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	private void initEnvironment() {
@@ -215,6 +247,9 @@ public class Funland {
 		BasicMesh houseMesh = MeshIO.loadOBJ("bigcubemany");
 		house = houseMesh.spawnModel();
 		house.translate(5f, 5f, -15f);
+		
+		ShadowMapQuadMesh smqMesh = new ShadowMapQuadMesh();
+		smq = smqMesh.spawnModel();
 		
 		needRegionUpdate = true;
 		updateRegions();
@@ -273,18 +308,20 @@ public class Funland {
 			glCullFace(GL_BACK);
 		}
 		
-		int texture = glGenTextures();
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		int framebuffer = glGenFramebuffers();
-		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0);
+		sTex = glGenTextures();
+		glBindTexture(GL_TEXTURE_2D, sTex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_MAP_DIM, SHADOW_MAP_DIM, 0, GL_DEPTH_COMPONENT, GL_FLOAT, (ByteBuffer)null);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, new float[] {1f, 1f, 1f, 1f});
+		sFBO = glGenFramebuffers();
+		glBindFramebuffer(GL_FRAMEBUFFER, sFBO);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, sTex, 0);
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		previousTS = currentTS = lastPrintTS = Sys.time();

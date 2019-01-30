@@ -15,6 +15,7 @@ public abstract class Shader{
 	public static final Shader BASIC = new BasicShader();
 	public static final Shader TEST = new TestShader();
 	public static final Shader SHADOW = new ShadowShader();
+	public static final Shader SMQ = new ShadowMapQuadShader();
 	
 	public static void enable(Shader s) {
 		s.setEnabled(true);

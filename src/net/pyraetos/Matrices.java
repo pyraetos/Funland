@@ -30,7 +30,7 @@ public abstract class Matrices{
 		PERSPECTIVE_MATRIX.get(PERSPECTIVE);
 		
 		SHADOW_MATRIX = new Matrix4f();
-		SHADOW_MATRIX.ortho(-20, 20, -20, 20, 20, -20);
+		SHADOW_MATRIX.ortho(-40f, 40f, -40f, 40f, 20f, -20f);
 		SHADOW = BufferUtils.createFloatBuffer(16);
 		SHADOW_MATRIX.get(SHADOW);
 		

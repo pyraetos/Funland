@@ -9,7 +9,10 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.pyraetos.objects.Model;
+import net.pyraetos.shaders.BasicShader;
 import net.pyraetos.shaders.Shader;
+
+import static net.pyraetos.shaders.Shader.*;
 import net.pyraetos.util.Sys;
 
 public abstract class Camera{
@@ -17,9 +20,13 @@ public abstract class Camera{
 	private static Matrix4f translationMatrix;
 	private static Matrix4f rotationMatrix;
 	private static Matrix4f viewMatrix;
+	private static Matrix4f lightTranslationMatrix;
+	private static Matrix4f lightRotationMatrix;
+	private static Matrix4f lightViewMatrix;
 	private static float rotY;
 	private static Vector3f camDir;
 	private static FloatBuffer view;
+	private static FloatBuffer lightView;
 	private static boolean transformed;
 	
 	//Camera position in world
@@ -31,11 +38,13 @@ public abstract class Camera{
 		translationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		rotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		viewMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
-		updateViewMatrix();
+		lightTranslationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
+		lightRotationMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX).rotateX(-Sys.PI / 2);
+		lightViewMatrix = new Matrix4f(Matrices.IDENTITY_MATRIX);
 		rotY = 0f;
 		camDir = new Vector3f(0f, 0f, -1f);
 		x = y = z = 0.0f;
-		transformed = false;
+		transformed = true;
 	}
 	
 	public static void translate(float x, float y, float z) {
@@ -46,6 +55,7 @@ public abstract class Camera{
 		Camera.y += dy;
 		Camera.z += dz;
 		translationMatrix.translate(-dx, -dy, -dz);
+		lightTranslationMatrix.translate(-dx, -dy, -dz);
 		transformed = true;
 	}
 
@@ -64,14 +74,30 @@ public abstract class Camera{
 	public static void view() {
 		if(transformed) {
 			updateViewMatrix();
+			updateLightViewMatrix();
+			
+			Shader old = ACTIVE_SHADER;
+			enable(SHADOW);
+			glUniformMatrix4fv(ACTIVE_SHADER.viewUniform, false, lightView);
+			enable(old);
+			
 			transformed = false;
 		}
-		glUniformMatrix4fv(Shader.ACTIVE_SHADER.viewUniform, false, view);
+		glUniformMatrix4fv(ACTIVE_SHADER.viewUniform, false, view);
+		if(ACTIVE_SHADER instanceof BasicShader) {
+			glUniformMatrix4fv(((BasicShader)ACTIVE_SHADER).lightViewUniform, false, lightView);
+		}
 	}
 	
 	private static void updateViewMatrix() {
 		rotationMatrix.mulAffine(translationMatrix, viewMatrix);
 		view = Matrices.toBuffer(viewMatrix);
+	}
+	
+
+	private static void updateLightViewMatrix() {
+		lightRotationMatrix.mulAffine(lightTranslationMatrix, lightViewMatrix);
+		lightView = Matrices.toBuffer(lightViewMatrix);
 	}
 	
 	//2D right now
