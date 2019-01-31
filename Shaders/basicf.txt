@@ -17,17 +17,28 @@ float light(){
 	return pow(max(dot(normalize(fragNormal), normalize(vec3(1, 2, 1))), 0.0), power);
 }
 
-bool shadow(){
+float shadow(){
+
 	//Bias for shadow acne
 	float bias = 0.02;
+
+	//For smoothing out the edges. Change blurSide to adjust.
+	vec2 inc = 1.0 / textureSize(shadowMap, 0);
+	float shadowFactor = 0.0;
+	int blurRad = 1;
 
     //Transform from screen coordinates to texture coordinates
     vec3 coords = lightViewedVertex * 0.5 + 0.5;
     
-    if(coords.z - bias < texture(shadowMap, coords.xy).r){
-       return false;
+    for(int row = -blurRad; row <= blurRad; row++){
+    	for(int col = -blurRad; col <= blurRad; col++){
+    		float d = texture(shadowMap, coords.xy + vec2(row, col) * inc).r;
+    		shadowFactor += (coords.z - bias) < d ? 0.0 : 1.0;
+    	}
     }
-    return true;
+    
+    //Higher values are more shadowed
+    return shadowFactor / pow(float(blurRad * 2 + 1), 2.0);
 }
 
 float fog(){
@@ -43,8 +54,8 @@ float fog(){
 
 void main()
 {
-	bool inShadow = shadow();
-	float lightFactor = inShadow ? 0 : light();
+	float shadowFactor = shadow();
+	float lightFactor = (1.0 - shadowFactor) * light();
 	float fogFactor = fog();
 	vec3 fog = vec3(0.5, 0.7, 1.0);
 	vec3 base = passColor;
