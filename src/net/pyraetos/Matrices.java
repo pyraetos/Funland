@@ -1,6 +1,7 @@
 package net.pyraetos;
 
 import java.nio.FloatBuffer;
+import static net.pyraetos.Options.*;
 
 import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
@@ -30,7 +31,7 @@ public abstract class Matrices{
 		PERSPECTIVE_MATRIX.get(PERSPECTIVE);
 		
 		SHADOW_MATRIX = new Matrix4f();
-		SHADOW_MATRIX.ortho(-40f, 40f, -40f, 40f, 20f, -20f);
+		SHADOW_MATRIX.ortho(-SHADOW_ORTHO_SIDE, SHADOW_ORTHO_SIDE, -SHADOW_ORTHO_SIDE, SHADOW_ORTHO_SIDE, 40f, -40f);
 		SHADOW = BufferUtils.createFloatBuffer(16);
 		SHADOW_MATRIX.get(SHADOW);
 		

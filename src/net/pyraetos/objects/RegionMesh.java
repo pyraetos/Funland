@@ -1,6 +1,7 @@
 package net.pyraetos.objects;
 
 import static net.pyraetos.Vectors.*;
+import static net.pyraetos.Options.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,7 +10,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.joml.Vector3f;
-import net.pyraetos.Color;
+
 import net.pyraetos.pgenerate.PGenerate;
 import net.pyraetos.util.Sys;
 
@@ -24,12 +25,8 @@ public class RegionMesh extends BasicMesh{
 	protected transient Model model;
 	
 	private static final PGenerate PG;
-	
-	public static final float ENTROPY = 4f;
-	public static final long SEED = Sys.randomSeed();
-	public static final Color COLOR = new Color(0.6f, 1f, 0.5f);
-	public static final double TREE_CHANCE = 0.01d;
-	public static final BasicMesh TREE_MESH = MeshIO.loadOBJ("tree");;
+
+	public static final BasicMesh TREE_MESH;
 	
 	public static final int SIDE = 9;
 	public static final int NUM_VERTICES = SIDE * SIDE;
@@ -39,9 +36,9 @@ public class RegionMesh extends BasicMesh{
 	static {
 		PG = new PGenerate(1024, 1024, SEED);//Don't like hard size, .generate should return if already generated
 		PG.setEntropy(ENTROPY);
-		//treeMesh = MeshIO.loadOBJ("tree");
-		//treeMesh.setColors(new int[]{514}, new net.pyraetos.Color[] {new net.pyraetos.Color(0.3f, 0.7f, 0.2f), new net.pyraetos.Color(0.8f, 0.4f, 0.2f)});
-		//MeshIO.saveDAT(treeMesh,"tree");
+		//TREE_MESH = MeshIO.loadOBJ("tree", new Color[] {new Color(0.2f,0.8f,0.4f), new Color(.45f,.3f,.1f)}, new String[]{"Cone", "BCylinder"});
+		//MeshIO.saveDAT(TREE_MESH, "tree");
+		TREE_MESH = MeshIO.loadDAT("tree");
 		INDICES = new int[NUM_INDICES];
 		int arr[] = {1,0,SIDE,1,SIDE,SIDE+1};
 		int count = 0;
@@ -105,7 +102,7 @@ public class RegionMesh extends BasicMesh{
 				Vector3f n0 = cross(to(v, verticesEx[i][j + 1]), to(v, verticesEx[i + 1][j]));
 				Vector3f n1 = cross(to(v, verticesEx[i][j - 1]), to(v, verticesEx[i - 1][j]));
 				Vector3f vn = average(n0, n1);
-				uas[SIDE * (i - 1) + j - 1] = new UniqueAttribute(v, vn, COLOR);
+				uas[SIDE * (i - 1) + j - 1] = new UniqueAttribute(v, vn, TERRAIN_COLOR);
 			}
 		}
 		

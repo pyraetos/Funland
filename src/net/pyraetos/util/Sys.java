@@ -26,8 +26,8 @@ public abstract class Sys{
 	public static final byte SOUTH = 1;
 	public static final byte EAST = 2;
 	public static final byte WEST = 3;
-	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("########.##");
-	private static final DecimalFormat DECIMAL_FORMAT1 = new DecimalFormat("########.#");
+	private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("##########.##");
+	private static final DecimalFormat DECIMAL_FORMAT1 = new DecimalFormat("##########.#");
 	private static final Random RANDOM = new Random();
 	public static final float PI = (float)Math.PI;
 
@@ -124,6 +124,22 @@ public abstract class Sys{
 			o = object;
 		}
 		return true;
+	}
+	
+	public static int min(int... arr) {
+		int min = Integer.MAX_VALUE;
+		for(int i : arr) {
+			if(i < min) min = i;
+		}
+		return min;
+	}
+	
+	public static int max(int... arr) {
+		int max = Integer.MIN_VALUE;
+		for(int i : arr) {
+			if(i > max) max = i;
+		}
+		return max;
 	}
 	
 	public static long time(){

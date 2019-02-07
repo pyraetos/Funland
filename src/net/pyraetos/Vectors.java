@@ -4,6 +4,8 @@ import org.joml.Vector3f;
 
 public abstract class Vectors{
 
+	public static final Vector3f UP = new Vector3f(0f, 1f, 0f);
+	
 	public static Vector3f cross(Vector3f a, Vector3f b) {
 		float x = a.y * b.z - a.z * b.y;
 		float y = a.z * b.x - a.x * b.z;

@@ -14,12 +14,12 @@ public class ShadowMapQuadShader extends Shader{
 	protected void initShader(String vertexPath, String fragmentPath) {
 		super.initShader(vertexPath, fragmentPath);
         glUseProgram(program);
-		projectionUniform = glGetUniformLocation(program, "proj");
-		viewUniform = glGetUniformLocation(program, "view");
-		modelUniform = glGetUniformLocation(program, "model");
-		glUniformMatrix4fv(projectionUniform, false, Matrices.PERSPECTIVE);
-		glUniformMatrix4fv(modelUniform, false, Matrices.IDENTITY);
-		glUniformMatrix4fv(viewUniform, false, Matrices.IDENTITY);
+		uniforms.put("proj", glGetUniformLocation(program, "proj"));
+		uniforms.put("view", glGetUniformLocation(program, "view"));
+		uniforms.put("model", glGetUniformLocation(program, "model"));
+		setUniform("proj", Matrices.PERSPECTIVE);
+		setUniform("view", Matrices.IDENTITY);
+		setUniform("model", Matrices.IDENTITY);
         glUseProgram(0);
 	}
 	

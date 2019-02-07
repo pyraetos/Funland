@@ -1,6 +1,6 @@
 package net.pyraetos.objects;
 
-import static org.lwjgl.opengl.GL20.*;
+import static net.pyraetos.shaders.Shader.*;
 
 import java.nio.FloatBuffer;
 
@@ -8,7 +8,6 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import net.pyraetos.Matrices;
-import net.pyraetos.shaders.Shader;
 import net.pyraetos.util.Sys;
 
 public class Model{
@@ -71,7 +70,7 @@ public class Model{
 			updateModelMatrix();
 			transformed = false;
 		}
-		glUniformMatrix4fv(Shader.ACTIVE_SHADER.modelUniform, false, model);
+		ACTIVE_SHADER.setUniform("model", model);
 		mesh.render();
 	}
 	

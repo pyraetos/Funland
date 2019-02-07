@@ -5,16 +5,12 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
-@SuppressWarnings("serial")
 public class ShadowMapQuadMesh implements Mesh{
 	
 	protected int vbo;
